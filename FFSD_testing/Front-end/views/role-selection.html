@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivicTrack – Select Your Role</title>
+    <link rel="stylesheet" href="/FFSD_001/FFSD_testing/Front-end/css/auth.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="auth-shell">
+
+    <!-- LEFT PANEL: decorative dashboard mockup -->
+    <div class="auth-deco">
+      <div class="deco-card">
+        <div class="deco-topbar">
+          <div class="deco-sidebar">
+            <div class="deco-logo-block"></div>
+            <div class="deco-nav-item active"></div>
+            <div class="deco-nav-item"></div>
+            <div class="deco-nav-item"></div>
+            <div class="deco-nav-item"></div>
+          </div>
+          <div class="deco-content">
+            <div class="deco-header-bar"></div>
+            <div class="deco-stat-row">
+              <div class="deco-stat red"></div>
+              <div class="deco-stat"></div>
+              <div class="deco-stat"></div>
+            </div>
+            <div class="deco-table">
+              <div class="deco-row header"></div>
+              <div class="deco-row"></div>
+              <div class="deco-row"></div>
+              <div class="deco-row"></div>
+              <div class="deco-row short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: role selection form -->
+    <div class="auth-panel">
+      <div class="auth-box">
+
+        <div class="auth-nav">
+          <div class="auth-brand">
+            <span class="brand-dot"></span>
+            <span>CivicTrack</span>
+          </div>
+          <a href="index.html" class="back-link">← Back</a>
+        </div>
+
+        <div class="auth-body">
+          <h2 class="auth-title">Select Your Role</h2>
+          <p class="auth-sub">Choose how you want to access this system</p>
+
+          <div class="role-grid">
+            <label class="role-option" data-role="citizen">
+              <input type="radio" name="role" value="citizen" hidden />
+              <div class="role-icon-wrap">👤</div>
+              <span class="role-label">Citizen</span>
+              <span class="role-desc">Report and track complaints</span>
+            </label>
+            <label class="role-option" data-role="officer">
+              <input type="radio" name="role" value="officer" hidden />
+              <div class="role-icon-wrap">🛠</div>
+              <span class="role-label">Officer</span>
+              <span class="role-desc">Manage assigned cases</span>
+            </label>
+            <label class="role-option" data-role="supervisor">
+              <input type="radio" name="role" value="supervisor" hidden />
+              <div class="role-icon-wrap">📊</div>
+              <span class="role-label">Supervisor</span>
+              <span class="role-desc">Oversee and approve resolutions</span>
+            </label>
+            <label class="role-option" data-role="superuser">
+              <input type="radio" name="role" value="superuser" hidden />
+              <div class="role-icon-wrap">⚙️</div>
+              <span class="role-label">Super User</span>
+              <span class="role-desc">Full system management</span>
+            </label>
+          </div>
+
+          <p id="role-error" class="field-error hidden">Please select a role to continue.</p>
+
+          <button class="btn-primary full" id="continue-btn">Continue</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+ <script src="../js/role-selection.js"></script>
+</body>
+</html>
