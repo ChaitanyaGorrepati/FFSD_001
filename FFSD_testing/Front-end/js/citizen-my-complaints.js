@@ -1,5 +1,5 @@
 // js/citizen-my-complaints.js
-import { fetchCases } from "../../Front-end/routes/caseRoutes.js";
+import { fetchCases } from "./index.js";
 
 let allCases = [];
 let currentFilter = "All";

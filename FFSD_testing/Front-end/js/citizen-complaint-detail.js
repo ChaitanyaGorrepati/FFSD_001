@@ -1,6 +1,5 @@
 // js/citizen-complaint-detail.js
-import { fetchCases, updateStatus, addNote } from "../../Front-end/routes/caseRoutes.js";
-import { getUsers } from "../../Front-end/models/userModel.js";
+import { fetchCases, updateStatus, addNote, getUsers } from "./index.js";
 
 const STATUS_ORDER = ["Submitted", "Assigned", "In Progress", "Resolved", "Closed"];
 

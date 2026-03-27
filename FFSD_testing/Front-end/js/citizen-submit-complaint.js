@@ -1,6 +1,5 @@
 // js/citizen-submit-complaint.js
-import { getOfficers } from "../../Front-end/models/userModel.js";
-import { submitCase } from "../../Front-end/routes/caseRoutes.js";
+import { submitCase, getOfficers } from "./index.js";
 
 // ── Department → Category mapping ──────────────────────────────────────────
 const DEPT_CATEGORIES = {
