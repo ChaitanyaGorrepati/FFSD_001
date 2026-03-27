@@ -1,5 +1,5 @@
 // js/citizen-dashboard.js
-import { fetchCases } from "./index.js";
+import { fetchCases } from "../index.js";
 
 const CURRENT_USER = "Ahmed Khalid"; // Replace with session-based user
 

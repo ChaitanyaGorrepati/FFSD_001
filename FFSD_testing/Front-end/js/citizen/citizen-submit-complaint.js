@@ -1,5 +1,5 @@
 // js/citizen-submit-complaint.js
-import { submitCase, getOfficers } from "./index.js";
+import { submitCase, getOfficers } from "../index.js";
 
 // ── Department → Category mapping ──────────────────────────────────────────
 const DEPT_CATEGORIES = {

@@ -42,13 +42,23 @@ export const departments = [
 ];
 
 // Users (officers + supervisors)
-export const users = [
-  { id: "off1", name: "Rashid", role: "officer", department: "Road",        zone: "Zone A" },
-  { id: "off2", name: "Kumar",  role: "officer", department: "Water",       zone: "Zone A" },
-  { id: "off3", name: "Ali",    role: "officer", department: "Electricity", zone: "Zone B" },
 
-  { id: "sup1", name: "Sara",   role: "supervisor", department: "Road"  },
-  { id: "sup2", name: "John",   role: "supervisor", department: "Water" }
+
+export const users = [
+  // Officers
+  { id: "off1", name: "Rashid", role: "officer", department: "Road", zone: "Zone A" },
+  { id: "off2", name: "Kumar", role: "officer", department: "Water", zone: "Zone B" },
+  { id: "off3", name: "Ali", role: "officer", department: "Electricity", zone: "Zone C" },
+  { id: "off4", name: "John", role: "officer", department: "Sanitation", zone: "Zone D" },
+
+  // Supervisors
+  { id: "sup1", name: "Sara", role: "supervisor", department: "Road" },
+  { id: "sup2", name: "David", role: "supervisor", department: "Water" },
+  { id: "sup3", name: "Kiran", role: "supervisor", department: "Electricity" },
+
+  // Citizens
+  { id: "cit1", name: "Ahmed", role: "citizen" },
+  { id: "cit2", name: "Rahul", role: "citizen" }
 ];
 
 // Initial Cases
