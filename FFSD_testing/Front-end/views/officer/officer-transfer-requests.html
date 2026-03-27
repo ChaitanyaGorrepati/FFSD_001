@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transfer Request - CivicTrack</title>
+  <link rel="stylesheet" href="../../css/global.css">
+  <link rel="stylesheet" href="../../css/officer.css">
+</head>
+<body>
+  <div class="app-shell">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">CT</div>
+        <div class="logo-name">CivicTrack</div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Overview</div>
+        <nav class="sidebar-nav">
+          <a href="dashboard.html">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Dashboard
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Cases</div>
+        <nav class="sidebar-nav">
+          <a href="assigned-cases.html">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Assigned to Me
+            <span class="badge-count">8</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <nav class="sidebar-nav">
+          <a href="#">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </a>
+          <a href="#">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            Logout
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="avatar">R</div>
+          <div class="sidebar-user-info">
+            <div class="name">M. Rashid</div>
+            <div class="role">Officer - Public Works</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-breadcrumb">
+          <span>CivicTrack</span>
+          <span class="sep">›</span>
+          <span class="crumb-active">Assigned Cases</span>
+        </div>
+        <div class="topbar-right">
+          <button class="topbar-icon-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </button>
+          <div class="topbar-user">
+            <div class="avatar">R</div>
+            <span class="name">M. Rashid</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="page-header">
+          <h1 class="page-title">Transfer Request</h1>
+        </div>
+        <p class="page-subtitle">Request to transfer this case to another authority.</p>
+
+        <div class="card" style="max-width: 800px; margin-top: 24px;">
+          
+          <!-- Transfer Case Section -->
+          <div class="transfer-section">
+            <h3 class="transfer-section-title">Transfer Case</h3>
+
+            <!-- Case Details -->
+            <div style="margin-bottom: 24px;">
+              <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">Case Details</h4>
+              <div class="transfer-detail-grid">
+                <div class="transfer-detail-item">
+                  <label>Case ID</label>
+                  <div class="value font-mono" id="transferCaseId">CIV-2025-0031</div>
+                </div>
+                <div class="transfer-detail-item">
+                  <label>Category</label>
+                  <div class="value" id="transferCategory">Road Damage</div>
+                </div>
+                <div class="transfer-detail-item">
+                  <label>Current Department</label>
+                  <div class="value" id="transferCurrentDept">Public Works</div>
+                </div>
+                <div class="transfer-detail-item">
+                  <label>Assigned Officer</label>
+                  <div class="value" id="transferOfficer">M. Rashid</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transfer To -->
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label class="form-label">Transfer To</label>
+              <select class="select" id="transferDepartment">
+                <option value="">Select department or authority</option>
+                <option value="Water">Water Department</option>
+                <option value="Electricity">Electricity Department</option>
+                <option value="Road">Road & Transport Department</option>
+                <option value="Sanitation">Sanitation Department</option>
+              </select>
+              
+              <div class="quick-action-card" onclick="selectQuickTransfer()">
+                <div class="quick-action-title">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  Transfer to Supervisor (Quick Action)
+                </div>
+              </div>
+            </div>
+
+            <!-- Transfer Reason -->
+            <div class="form-group" style="margin-bottom: 24px;">
+              <label class="form-label">Transfer Reason <span class="req">*</span></label>
+              <textarea class="textarea" id="transferReason" placeholder="Explain why this case needs to be transferred..." style="min-height: 120px;"></textarea>
+              <div class="text-xs text-muted" style="margin-top: 6px;">
+                Provide detailed justification for the transfer request.
+              </div>
+            </div>
+
+            <!-- Attach Supporting Documents -->
+            <div class="form-group">
+              <label class="form-label">Attach Supporting Documents (Optional)</label>
+              <div class="upload-zone">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">Click to upload or drag and drop</div>
+                <div class="upload-hint">PDF, DOC, DOCX, PNG, JPG (max 10MB)</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 12px; padding-top: 24px; margin-top: 24px; border-top: 1px solid var(--border);">
+            <button class="btn btn-outline" onclick="window.history.back()">Cancel</button>
+            <button class="btn btn-primary" onclick="submitTransferRequest()">Submit Transfer Request</button>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script type="module" src="../../js/officer/officer-transfer-requests.js"></script>
+</body>
+</html>

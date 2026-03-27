@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Case Management - CivicTrack</title>
+  <link rel="stylesheet" href="../../css/global.css">
+  <link rel="stylesheet" href="../../css/officer.css">
+</head>
+<body>
+  <div class="app-shell">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">CT</div>
+        <div class="logo-name">CivicTrack</div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Overview</div>
+        <nav class="sidebar-nav">
+          <a href="officer-dashboard.html">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            Dashboard
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Cases</div>
+        <nav class="sidebar-nav">
+          <a href="officer-assigned-cases.html">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            Assigned to Me
+            
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Account</div>
+        <nav class="sidebar-nav">
+          <a href="#">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            Settings
+          </a>
+          <a href="#">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+            Logout
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="avatar">R</div>
+          <div class="sidebar-user-info">
+            <div class="name">M. Rashid</div>
+            <div class="role">Officer - Public Works</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-breadcrumb">
+          <span>CivicTrack</span>
+          <span class="sep">›</span>
+          <span>Officer Dashboard</span>
+          <span class="sep">›</span>
+          <span class="crumb-active">Assigned Cases</span>
+        </div>
+        <div class="topbar-right">
+          <button class="topbar-icon-btn">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </button>
+          <div class="topbar-user">
+            <div class="avatar">R</div>
+            <span class="name">M. Rashid</span>
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <a href="officer-assigned-cases.html" class="back-btn">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Back
+        </a>
+
+        <div class="page-header">
+          <h1 class="page-title">Case Management</h1>
+          <button class="btn btn-primary" onclick="goToTransferPage()">
+  TRANSFER REQUEST
+</button>
+        </div>
+
+        <p class="page-subtitle" id="caseSubtitle">CIV-2025-0031 - Road Damage - Assigned to you</p>
+
+        <!-- Case Header -->
+        <div class="case-detail-header">
+          <div class="case-id-row">
+            <span class="case-id" id="caseId">CIV-2025-0031</span>
+            <span class="badge badge-progress" id="caseStatus">In Progress</span>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>CASE ID</label>
+              <div class="value font-mono" id="detailCaseId">CIV-2025-0031</div>
+            </div>
+            <div class="detail-item">
+              <label>CITIZEN</label>
+              <div class="value" id="detailCitizen">Ahmed Khalid Al-Mansouri</div>
+            </div>
+            <div class="detail-item">
+              <label>CATEGORY</label>
+              <div class="value" id="detailCategory">Road Damage</div>
+            </div>
+            <div class="detail-item">
+              <label>PHONE</label>
+              <div class="value" id="detailPhone">+971 50 123 4567</div>
+            </div>
+            <div class="detail-item">
+              <label>ZONE</label>
+              <div class="value" id="detailZone">Zone A - North</div>
+            </div>
+            <div class="detail-item">
+              <label>LOCATION</label>
+              <div class="value" id="detailLocation">Main Rd, Block 5, Sector 12</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <!-- Left Column -->
+          <div>
+            <div class="card">
+              <h2 class="card-title" style="margin-bottom: 16px;">Complaint Description</h2>
+              <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 6px;">TITLE</label>
+                <div style="font-size: 14px; font-weight: 600; color: var(--text-primary);" id="complaintTitle">Large pothole causing vehicle damage on main road</div>
+              </div>
+              <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 6px;">DESCRIPTION</label>
+                <div style="font-size: 13.5px; line-height: 1.6; color: var(--text-secondary);" id="complaintDescription">
+                  A large pothole approximately 60cm wide and 15cm deep on the main road near Block 5, Sector 12. Causing vehicle damage and safety risks since late February after heavy rains.
+                </div>
+              </div>
+
+              <div style="margin-top: 20px;">
+                <label style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); margin-bottom: 10px;">ATTACHMENTS</label>
+                <div class="attachment-grid" id="attachmentGrid">
+                  <div class="attachment-item">
+                    <div class="attachment-preview">📷</div>
+                    <div class="attachment-name">photo_001.jpg</div>
+                  </div>
+                  <div class="attachment-item">
+                    <div class="attachment-preview">📷</div>
+                    <div class="attachment-name">photo_002.jpg</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+              <h2 class="card-title" style="margin-bottom: 16px;">Officer Actions</h2>
+              
+              <div class="form-group" style="margin-bottom: 16px;">
+                <label class="form-label">UPDATE STATUS</label>
+                <select class="select" id="statusSelect">
+                  <option value="In Progress">In Progress (current)</option>
+                  <option value="Assigned">Assigned</option>
+                  <option value="Waiting For Citizen">Waiting For Citizen</option>
+                  <option value="Resolved">Resolved</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">UPLOAD DOCUMENT</label>
+                <div class="upload-zone">
+                  <div class="upload-icon">📤</div>
+                  <div class="upload-text">Click to upload</div>
+                  <div class="upload-hint">PDF, DOC, DOCX, PNG, JPG (max 10MB)</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div>
+            <div class="card">
+              <h2 class="card-title" style="margin-bottom: 16px;">Progress Timeline</h2>
+              <div class="timeline" id="timeline">
+                <div class="timeline-item">
+                  <div class="timeline-dot complete"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Submitted</div>
+                    <div class="timeline-meta">Mar 10, 2025</div>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot complete"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Assigned</div>
+                    <div class="timeline-meta">Mar 11, 2025</div>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot active"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">In Progress</div>
+                    <div class="timeline-meta">Mar 13, 2025</div>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Resolved</div>
+                    <div class="timeline-meta">Pending</div>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-dot"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-title">Closed</div>
+                    <div class="timeline-meta">Pending</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script type="module" src="../../js/officer/officer-case-detail.js"></script>
+</body>
+</html>
