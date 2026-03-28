@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivicTrack – Create Account</title>
+  <link rel="stylesheet" href="/FFSD_001/FFSD_testing/Front-end/css/auth.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="auth-shell">
+
+    <!-- LEFT: decorative mockup (same as login) -->
+    <div class="auth-deco">
+      <div class="deco-card">
+        <div class="deco-topbar">
+          <div class="deco-sidebar">
+            <div class="deco-logo-block"></div>
+            <div class="deco-nav-item active"></div>
+            <div class="deco-nav-item"></div>
+            <div class="deco-nav-item"></div>
+            <div class="deco-nav-item"></div>
+          </div>
+          <div class="deco-content">
+            <div class="deco-header-bar"></div>
+            <div class="deco-stat-row">
+              <div class="deco-stat red"></div>
+              <div class="deco-stat"></div>
+              <div class="deco-stat"></div>
+            </div>
+            <div class="deco-table">
+              <div class="deco-row header"></div>
+              <div class="deco-row"></div>
+              <div class="deco-row"></div>
+              <div class="deco-row short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: registration form -->
+    <div class="auth-panel">
+      <div class="auth-box">
+
+        <div class="auth-nav">
+          <div class="auth-brand">
+            <span class="brand-dot"></span>
+            <span>CivicTrack</span>
+          </div>
+          <a href="login.html" class="back-link">← Back to Login</a>
+        </div>
+
+        <div class="auth-body">
+          <h2 class="auth-title">Create Citizen Account</h2>
+          <p class="auth-sub">Register to submit and track complaints</p>
+
+          <div id="successBanner" class="hidden" style="
+            background:#d1fae5; border:1px solid #6ee7b7; color:#065f46;
+            padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:0.875rem;
+          ">
+            Account created! <a href="login.html" style="color:#065f46; font-weight:600;">Login now →</a>
+          </div>
+
+          <div class="form-group">
+            <label for="fullname">Full Name</label>
+            <div class="input-wrap">
+              <span class="input-icon">🪪</span>
+              <input type="text" id="fullname" placeholder="Your full name" autocomplete="off" />
+            </div>
+            <p id="fullname-error" class="field-error hidden"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username</label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" id="username" placeholder="Choose a username" autocomplete="off" />
+            </div>
+            <p id="username-error" class="field-error hidden"></p>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="password" placeholder="Create a password" />
+            </div>
+            <p id="password-error" class="field-error hidden"></p>
+          </div>
+
+          <button class="btn-primary full" id="register-btn">Create Account</button>
+
+          <p class="auth-note">Officers and Supervisors cannot self-register. Contact your Super User.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script type="module" src="../js/create-account.js"></script>
+</body>
+</html>

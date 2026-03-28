@@ -1,129 +1,118 @@
 /**
- * login.js
- * Place at: js/login.js
- *
- * Reads role from sessionStorage, validates username against mockData users,
- * stores session in sessionStorage, and routes to the correct dashboard.
- *
- * Import note:
- *   getUsers() is pulled from the existing userModel via a thin helper below.
- *   Do NOT modify userModel.js — the import path below must match your project.
- *
- *   If your entry point is at the root (same level as /models, /routes, /js),
- *   use:  import { getUsers } from "../models/userModel.js";
- *
- *   Adjust the path prefix if js/ is nested differently.
+ * login.js — Place at: js/login.js
+ * Fixed: citizen login now matches by username field.
+ * Officers/Supervisors/Superusers match by name (from mockData, no username field).
  */
 
 import { getUsers } from "./index.js";
 
-// ── DOM refs ─────────────────────────────────────────────────────────────────
+// ── DOM refs ──────────────────────────────────────────────────────────────────
 const roleDisplay   = document.getElementById("role-display");
-const roleIdDisplay = document.getElementById("role-id-display");
 const usernameInput = document.getElementById("username");
 const usernameError = document.getElementById("username-error");
 const loginBtn      = document.getElementById("login-btn");
 
-// ── Role → dashboard mapping ─────────────────────────────────────────────────
-// NEW HELPER — add this block in js/utils.js if you want to centralise routing
+// ── Role → dashboard mapping ──────────────────────────────────────────────────
 const ROLE_ROUTES = {
-  citizen:   "./citizen/citizen-dashboard.html",
-  officer:   "./officer/officer-dashboard.html",
-  supervisor:"./supervisor/supervisor-dashboard.html",
-  superuser: "./superuser/superuser-dashboard.html",
+  citizen:    "./citizen/citizen-dashboard.html",
+  officer:    "./officer/officer-dashboard.html",
+  supervisor: "./supervisor/supervisor-dashboard.html",
+  superuser:  "./superuser/superuser-dashboard.html",
+};
+
+const ROLE_LABELS = {
+  citizen:    "Citizen",
+  officer:    "Officer",
+  supervisor: "Supervisor",
+  superuser:  "Super User",
 };
 
 // ── Read persisted role ───────────────────────────────────────────────────────
 const role = sessionStorage.getItem("ct_selected_role");
 
 if (!role) {
-  // No role selected — send back to selection
   window.location.href = "role-selection.html";
 }
-
-// Pretty-print the role label
-const ROLE_LABELS = {
-  citizen:   "Citizen",
-  officer:   "Officer",
-  supervisor:"Supervisor",
-  superuser: "Super User",
-};
 
 if (roleDisplay) {
   roleDisplay.textContent = ROLE_LABELS[role] || role;
 }
 
+// ── Inject "Create Account" link for citizens only ───────────────────────────
+if (role === "citizen") {
+  const authBody = document.querySelector(".auth-body");
+  if (authBody && !document.getElementById("create-account-link")) {
+    const p = document.createElement("p");
+    p.style.cssText = "margin-top:12px; text-align:center; font-size:0.875rem;";
+    p.innerHTML = `Don't have an account? <a id="create-account-link" href="create-account.html" style="color:var(--red, #e33); font-weight:600;">Create one</a>`;
+    authBody.appendChild(p);
+  }
+}
+
 // ── Login handler ─────────────────────────────────────────────────────────────
 loginBtn.addEventListener("click", handleLogin);
-usernameInput.addEventListener("keydown", (e) => {
+usernameInput.addEventListener("keydown", e => {
   if (e.key === "Enter") handleLogin();
 });
 
 function handleLogin() {
-  const username = usernameInput.value.trim();
+  const input = usernameInput.value.trim();
 
-  // ── Validation ──
-  if (!username) {
-    showError(usernameInput, usernameError, "Username is required.");
+  if (!input) {
+    showError("Username is required.");
     return;
   }
+  clearError();
 
-  clearError(usernameInput, usernameError);
-
-  // ── Match against mockData users ──
   const users = getUsers();
 
-  // Map superuser role label back to mock role value
-  const lookupRole = role === "superuser" ? "superuser" : role;
+  let matched;
 
-  const matched = users.find(
-    (u) =>
-      u.name.toLowerCase() === username.toLowerCase() &&
-      u.role === lookupRole
-  );
+  if (role === "citizen") {
+    // Citizens log in with their username field
+    matched = users.find(
+      u => u.role === "citizen" &&
+           (u.username?.toLowerCase() === input.toLowerCase())
+    );
+  } else {
+    // Officers / Supervisors / Superusers log in with their name (mockData has no username)
+    const lookupRole = role === "superuser" ? "superuser" : role;
+    matched = users.find(
+      u => u.role === lookupRole &&
+           u.name.toLowerCase() === input.toLowerCase()
+    );
+  }
 
   if (!matched) {
-    showError(
-      usernameInput,
-      usernameError,
-      `No ${ROLE_LABELS[role]} found with that username. Try: ${getSampleNames(users, lookupRole)}`
-    );
+    const hint = role === "citizen"
+      ? "Check your username or create an account."
+      : `No ${ROLE_LABELS[role]} found. Try: ${getSampleNames(users, role)}`;
+    showError(hint);
     return;
   }
 
-  // ── Persist session ──
+  // Persist session
   sessionStorage.setItem("ct_user", JSON.stringify(matched));
 
-  // ── Route to dashboard ──
-  const target = ROLE_ROUTES[role] || "index.html";
-  window.location.href = target;
+  // Route to dashboard
+  window.location.href = ROLE_ROUTES[role] || "index.html";
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function showError(input, errorEl, message) {
-  input.classList.add("error-input");
-  errorEl.textContent = message;
-  errorEl.classList.remove("hidden");
+function showError(msg) {
+  usernameInput.classList.add("error-input");
+  usernameError.textContent = msg;
+  usernameError.classList.remove("hidden");
 }
 
-function clearError(input, errorEl) {
-  input.classList.remove("error-input");
-  errorEl.classList.add("hidden");
+function clearError() {
+  usernameInput.classList.remove("error-input");
+  usernameError.classList.add("hidden");
 }
 
-/**
- * NEW HELPER — getSampleNames
- * Returns a comma-separated list of names for the given role, for hint display.
- * Add this in js/utils.js if reused elsewhere.
- *
- * @param {Array} users
- * @param {string} role
- * @returns {string}
- */
 function getSampleNames(users, role) {
   return users
-    .filter((u) => u.role === role)
-    .map((u) => u.name)
+    .filter(u => u.role === role)
+    .map(u => u.name)
     .join(", ") || "none available";
 }
