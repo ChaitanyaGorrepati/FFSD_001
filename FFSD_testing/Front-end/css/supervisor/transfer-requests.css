@@ -1,13 +1,34 @@
 /* transfer-requests.css */
 @import 'supervisor-base.css';
 
+/* Outgoing "Take Action" button (red, existing) */
 .action-btn {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 6px 14px; background: var(--red); color: #fff;
   border: none; border-radius: 7px;
   font-size: 12.5px; font-weight: 600; cursor: pointer;
   font-family: var(--font-body); text-decoration: none;
-  transition: background .15s;
-  white-space: nowrap;
+  transition: background .15s; white-space: nowrap;
 }
 .action-btn:hover { background: #C62828; }
+
+/* Approve / Reject buttons in Transfer Requests table */
+.btn-sm {
+  padding: 5px 12px; font-size: 12px;
+  border-radius: 6px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-body);
+  border: none; transition: background .15s; white-space: nowrap;
+}
+.btn-sm-green {
+  background: #2E7D32; color: #fff;
+}
+.btn-sm-green:hover { background: #1B5E20; }
+
+.btn-sm-red { background: var(--red); color: #fff; }
+.btn-sm-red:hover { background: #C62828; }
+
+.btn-sm-outline {
+  background: #fff; color: var(--gray-800);
+  border: 1.5px solid var(--gray-200);
+}
+.btn-sm-outline:hover { background: var(--gray-100); }

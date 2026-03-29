@@ -114,3 +114,88 @@ window.logout = function () {
   sessionStorage.removeItem("ct_selected_role");
   window.location.href = "../index.html";
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ▼▼ ADDED: Notification helpers — read/update the shared "notifications" key ▼▼
+// These functions are imported by officer pages that need the bell badge.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Returns all unread notifications for a given officerId.
+ * The "notifications" key is written by supervisorData.pushNotification().
+ */
+export function getUnreadNotifications(officerId) {
+  try {
+    const all = JSON.parse(localStorage.getItem("notifications") || "[]");
+    return all.filter(n => n.to === officerId && !n.read);
+  } catch { return []; }
+}
+
+/**
+ * Returns ALL notifications for a given officerId (read + unread), newest first.
+ */
+export function getAllNotifications(officerId) {
+  try {
+    const all = JSON.parse(localStorage.getItem("notifications") || "[]");
+    return all
+      .filter(n => n.to === officerId)
+      .sort((a, b) => new Date(b.time) - new Date(a.time));
+  } catch { return []; }
+}
+
+/**
+ * Marks all notifications for this officer as read.
+ */
+export function markAllNotificationsRead(officerId) {
+  try {
+    const all = JSON.parse(localStorage.getItem("notifications") || "[]");
+    const updated = all.map(n =>
+      n.to === officerId ? { ...n, read: true } : n
+    );
+    localStorage.setItem("notifications", JSON.stringify(updated));
+  } catch { /* silent */ }
+}
+
+/**
+ * Updates the notification bell badge count in the topbar.
+ * Looks for element with id="notif-count" (badge) and id="notif-btn" (bell button).
+ * Call this after initOfficerUI() on every officer page.
+ */
+export function updateNotifBadge(officerId) {
+  const count  = getUnreadNotifications(officerId).length;
+  const badge  = document.getElementById("notif-count");
+  const btn    = document.getElementById("notif-btn");
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? "flex" : "none";
+  }
+  if (btn) {
+    btn.setAttribute("data-count", count);
+  }
+}
+
+/**
+ * Renders the notification dropdown panel.
+ * Expects a <div id="notif-panel"> in the HTML.
+ */
+export function renderNotifPanel(officerId) {
+  const panel = document.getElementById("notif-panel");
+  if (!panel) return;
+
+  const notifs = getAllNotifications(officerId);
+  markAllNotificationsRead(officerId);
+  updateNotifBadge(officerId);  // reset badge to 0 after viewing
+
+  if (!notifs.length) {
+    panel.innerHTML = `<div class="notif-empty">No notifications yet.</div>`;
+    return;
+  }
+
+  panel.innerHTML = notifs.map(n => `
+    <div class="notif-item${n.read ? "" : " unread"}" onclick="window.location.href='officer-case-details.html?id=${n.caseId || ""}'">
+      <div class="notif-msg">${n.message}</div>
+      <div class="notif-time">${new Date(n.time).toLocaleDateString("en-GB", { day:"2-digit", month:"short" })}
+        · ${new Date(n.time).toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" })}</div>
+    </div>`).join("");
+}
+// ▲▲ END ADDED ▲▲

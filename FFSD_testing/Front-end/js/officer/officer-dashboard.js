@@ -2,7 +2,9 @@
 import {
   getOfficerSession, initOfficerUI, getOfficerCases,
   calcStats, updateSidebarBadges, statusBadge, priorityBadge,
-  formatDate, updateCaseById, getCaseById
+  formatDate, updateCaseById, getCaseById,
+  // ▼ ADDED: notification helpers
+  updateNotifBadge, renderNotifPanel
 } from "./officer-utils.js";
 
 const user = getOfficerSession();
@@ -10,6 +12,24 @@ if (!user) throw new Error("No session");
 
 initOfficerUI(user);
 updateSidebarBadges(user.id);
+
+// ▼ ADDED: update notification bell badge on page load
+updateNotifBadge(user.id);
+
+// ▼ ADDED: toggle notification panel on bell click
+document.getElementById("notif-btn")?.addEventListener("click", (e) => {
+  e.stopPropagation();
+  const panel = document.getElementById("notif-panel");
+  if (!panel) return;
+  const isOpen = panel.style.display === "block";
+  panel.style.display = isOpen ? "none" : "block";
+  if (!isOpen) renderNotifPanel(user.id);
+});
+document.addEventListener("click", () => {
+  const panel = document.getElementById("notif-panel");
+  if (panel) panel.style.display = "none";
+});
+// ▲ END ADDED
 
 // Welcome name
 document.getElementById("welcome-name").textContent = user.name;
