@@ -7,12 +7,33 @@
   <link rel="stylesheet" href="/FFSD_001/FFSD_testing/Front-end/css/auth.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    body.superuser-login .auth-box {
+      border: 2px solid #8b5cf6;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(139, 92, 246, 0) 100%);
+    }
+    body.superuser-login .auth-title {
+      color: #8b5cf6;
+    }
+    body.superuser-login .btn-primary {
+      background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+    }
+    .superuser-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+  </style>
 </head>
 <body>
 
   <div class="auth-shell">
 
-    <!-- LEFT: decorative mockup -->
     <div class="auth-deco">
       <div class="deco-card">
         <div class="deco-topbar">
@@ -42,7 +63,6 @@
       </div>
     </div>
 
-    <!-- RIGHT: login form -->
     <div class="auth-panel">
       <div class="auth-box">
 
@@ -55,27 +75,30 @@
         </div>
 
         <div class="auth-body">
-          <h2 class="auth-title">Login to CivicTrack</h2>
+          <h2 class="auth-title">Login to CivicTrack<span id="superuser-badge"></span></h2>
           <p class="auth-sub">
             Continue as <span id="role-display" class="role-highlight">—</span>
-            <span id="role-id-display" class="role-id-hint"></span>
           </p>
 
           <div class="form-group">
-            <label for="username">Username</label>
+            <label for="username">Username / Name</label>
             <div class="input-wrap">
               <span class="input-icon">👤</span>
-              <input
-                type="text"
-                id="username"
-                placeholder="Enter your username"
-                autocomplete="off"
-              />
+              <input type="text" id="username" placeholder="Enter your username" autocomplete="off" />
             </div>
-            <p id="username-error" class="field-error hidden">Username is required.</p>
+            <p id="username-error" class="field-error hidden"></p>
           </div>
 
-          <button class="btn-primary full" id="login-btn">Continue to Dashboard</button>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="password" placeholder="Enter your password" autocomplete="off" />
+            </div>
+            <p id="password-error" class="field-error hidden"></p>
+          </div>
+
+          <button class="btn-primary full" id="login-btn">Login</button>
 
           <p class="auth-note">By logging in, you agree to CivicTrack's terms of service and privacy policy.</p>
         </div>
@@ -83,6 +106,15 @@
       </div>
     </div>
   </div>
+
+  <script>
+    const role = sessionStorage.getItem("ct_selected_role");
+    if (role === "superuser") {
+      document.body.classList.add("superuser-login");
+      const badge = document.getElementById("superuser-badge");
+      badge.innerHTML = ' <span class="superuser-badge">Admin Access</span>';
+    }
+  </script>
 
 <script type="module" src="../js/login.js"></script>
 </body>

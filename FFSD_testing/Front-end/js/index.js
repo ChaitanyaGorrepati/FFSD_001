@@ -1,17 +1,19 @@
-// js/index.js  ← one file to rule them all
-export { 
-  fetchCases, 
-  submitCase, 
-  updateStatus, 
-  addNote, 
-  fetchCasesForSupervisor  // local addition
-} from "../../Front-end/routes/caseRoutes.js";
+// js/index.js
 
-export { 
-  getUsers, 
-  getOfficers, 
-  initUsers,               // remote addition
-  createCitizenAccount     // remote addition
-} from "../../Front-end/models/userModel.js";
+export {
+  fetchCases,
+  submitCase,
+  updateStatus,
+  addNote,
+  fetchCasesForSupervisor
+} from "../routes/caseRoutes.js";
 
-export { initCases } from "../../Front-end/models/caseModel.js";
+export {
+  getUsers,
+  getOfficers,
+  initUsers,
+  createCitizenAccount,
+  validateUserLogin
+} from "../models/userModel.js";
+
+export { initCases } from "../models/caseModel.js";

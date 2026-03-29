@@ -1,18 +1,14 @@
-/**
- * login.js — Place at: js/login.js
- * Fixed: citizen login now matches by username field.
- * Officers/Supervisors/Superusers match by name (from mockData, no username field).
- */
+// js/login.js - FIXED VERSION (Direct import from userModel)
 
-import { getUsers } from "./index.js";
+import { validateUserLogin } from "../models/userModel.js";
 
-// ── DOM refs ──────────────────────────────────────────────────────────────────
 const roleDisplay   = document.getElementById("role-display");
 const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
 const usernameError = document.getElementById("username-error");
+const passwordError = document.getElementById("password-error");
 const loginBtn      = document.getElementById("login-btn");
 
-// ── Role → dashboard mapping ──────────────────────────────────────────────────
 const ROLE_ROUTES = {
   citizen:    "./citizen/citizen-dashboard.html",
   officer:    "./officer/officer-dashboard.html",
@@ -27,7 +23,6 @@ const ROLE_LABELS = {
   superuser:  "Super User",
 };
 
-// ── Read persisted role ───────────────────────────────────────────────────────
 const role = sessionStorage.getItem("ct_selected_role");
 
 if (!role) {
@@ -38,7 +33,7 @@ if (roleDisplay) {
   roleDisplay.textContent = ROLE_LABELS[role] || role;
 }
 
-// ── Inject "Create Account" link for citizens only ───────────────────────────
+// Show "Create Account" link for citizens only
 if (role === "citizen") {
   const authBody = document.querySelector(".auth-body");
   if (authBody && !document.getElementById("create-account-link")) {
@@ -49,70 +44,75 @@ if (role === "citizen") {
   }
 }
 
-// ── Login handler ─────────────────────────────────────────────────────────────
+// Event listeners
 loginBtn.addEventListener("click", handleLogin);
 usernameInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") passwordInput.focus();
+});
+passwordInput.addEventListener("keydown", e => {
   if (e.key === "Enter") handleLogin();
 });
 
 function handleLogin() {
-  const input = usernameInput.value.trim();
+  console.log("Login button clicked"); // Debug log
+  
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
 
-  if (!input) {
-    showError("Username is required.");
-    return;
-  }
-  clearError();
-
-  const users = getUsers();
-
-  let matched;
-
-  if (role === "citizen") {
-    // Citizens log in with their username field
-    matched = users.find(
-      u => u.role === "citizen" &&
-           (u.username?.toLowerCase() === input.toLowerCase())
-    );
-  } else {
-    // Officers / Supervisors / Superusers log in with their name (mockData has no username)
-    const lookupRole = role === "superuser" ? "superuser" : role;
-    matched = users.find(
-      u => u.role === lookupRole &&
-           u.name.toLowerCase() === input.toLowerCase()
-    );
-  }
-
-  if (!matched) {
-    const hint = role === "citizen"
-      ? "Check your username or create an account."
-      : `No ${ROLE_LABELS[role]} found. Try: ${getSampleNames(users, role)}`;
-    showError(hint);
+  if (!username) {
+    showUsernameError("Username/Name is required.");
     return;
   }
 
-  // Persist session
-  sessionStorage.setItem("ct_user", JSON.stringify(matched));
+  if (!password) {
+    showPasswordError("Password is required.");
+    return;
+  }
 
-  // Route to dashboard
-  window.location.href = ROLE_ROUTES[role] || "index.html";
+  clearErrors();
+
+  console.log("Validating:", { username, password, role }); // Debug log
+
+  const result = validateUserLogin(username, password, role);
+
+  console.log("Validation result:", result); // Debug log
+
+  if (!result.success) {
+    if (result.error.includes("No ") || result.error.includes("not found")) {
+      showUsernameError(result.error);
+    } else if (result.error.includes("password")) {
+      showPasswordError(result.error);
+    } else {
+      showPasswordError(result.error);
+    }
+    return;
+  }
+
+  // Success - save session and redirect
+  console.log("Login successful, redirecting..."); // Debug log
+  sessionStorage.setItem("ct_user", JSON.stringify(result.user));
+  sessionStorage.setItem("ct_user_id", result.user.id);
+
+  const target = ROLE_ROUTES[role] || "index.html";
+  console.log("Redirecting to:", target); // Debug log
+  window.location.href = target;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function showError(msg) {
+function showUsernameError(msg) {
   usernameInput.classList.add("error-input");
   usernameError.textContent = msg;
   usernameError.classList.remove("hidden");
 }
 
-function clearError() {
-  usernameInput.classList.remove("error-input");
-  usernameError.classList.add("hidden");
+function showPasswordError(msg) {
+  passwordInput.classList.add("error-input");
+  passwordError.textContent = msg;
+  passwordError.classList.remove("hidden");
 }
 
-function getSampleNames(users, role) {
-  return users
-    .filter(u => u.role === role)
-    .map(u => u.name)
-    .join(", ") || "none available";
+function clearErrors() {
+  usernameInput.classList.remove("error-input");
+  passwordInput.classList.remove("error-input");
+  usernameError.classList.add("hidden");
+  passwordError.classList.add("hidden");
 }
