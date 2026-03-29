@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivicTrack — Case Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/officer.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">CT</div>
+      <span class="logo-name">CivicTrack</span>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <nav class="sidebar-nav">
+        <a href="officer-dashboard.html">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </a>
+        <a href="officer-assigned-cases.html" class="active">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Assigned Cases
+          <span class="badge-count" id="sb-assigned-count">0</span>
+        </a>
+        <a href="officer-transfer-requests.html">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          Transfer Requests
+          <span class="badge-count" id="sb-transfer-count">0</span>
+        </a>
+      </nav>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="name" id="sidebar-name">Loading…</div>
+          <div class="role">Officer</div>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;margin-top:8px;padding:7px 10px;border-radius:6px;font-size:12.5px;font-weight:600;color:#94A3B8;background:transparent;border:1px solid rgba(255,255,255,.08);cursor:pointer;">
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-breadcrumb">
+        <a href="officer-assigned-cases.html" style="color:var(--text-secondary);text-decoration:none;">Assigned Cases</a>
+        <span class="sep">›</span>
+        <span class="crumb-active" id="breadcrumb-id">Case Details</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="avatar sm" id="topbar-avatar">?</div>
+          <span class="name" id="topbar-name">Loading…</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <a href="officer-assigned-cases.html" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to Cases
+      </a>
+
+      <!-- Case Header -->
+      <div class="case-detail-header" id="case-header">
+        <div class="case-id-row">
+          <span class="case-id" id="detail-case-id">—</span>
+          <span class="badge" id="detail-status-badge">—</span>
+          <span class="badge" id="detail-priority-badge">—</span>
+        </div>
+        <h2 id="detail-title" style="font-size:20px;font-weight:700;margin-bottom:6px;">—</h2>
+        <p class="case-meta" id="detail-meta">—</p>
+
+        <div class="detail-grid" style="margin-top:18px;">
+          <div class="detail-item">
+            <label>Department</label>
+            <div class="value" id="detail-dept">—</div>
+          </div>
+          <div class="detail-item">
+            <label>Zone</label>
+            <div class="value" id="detail-zone">—</div>
+          </div>
+          <div class="detail-item">
+            <label>Category</label>
+            <div class="value" id="detail-category">—</div>
+          </div>
+          <div class="detail-item">
+            <label>Submitted</label>
+            <div class="value" id="detail-date">—</div>
+          </div>
+          <div class="detail-item" style="grid-column:1/-1;">
+            <label>Location</label>
+            <div class="value" id="detail-location">—</div>
+          </div>
+          <div class="detail-item" style="grid-column:1/-1;">
+            <label>Description</label>
+            <div class="value" id="detail-description" style="font-weight:400;color:var(--text-secondary);line-height:1.7;">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Column Layout -->
+      <div class="two-col">
+        <!-- LEFT: Actions + Notes -->
+        <div>
+          <!-- Quick Actions -->
+          <div class="info-card">
+            <div class="info-card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              Quick Actions
+            </div>
+            <div class="action-row" style="flex-wrap:wrap;">
+              <button class="btn btn-outline btn-sm" onclick="openPriorityModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/></svg>
+                Change Priority
+              </button>
+              <button class="btn btn-outline btn-sm" onclick="openStatusModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Change Status
+              </button>
+              <button class="btn btn-sm" style="background:var(--yellow-light);color:#B45309;border:1.5px solid #FDE68A;" onclick="goToTransfer()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+                Transfer Request
+              </button>
+            </div>
+          </div>
+
+          <!-- Notes / Timeline -->
+          <div class="info-card">
+            <div class="info-card-title">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Notes &amp; Activity
+            </div>
+            <div id="notes-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+              <p style="font-size:13px;color:var(--text-muted);">No notes yet.</p>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <input type="text" id="note-input" class="input" placeholder="Add a note…" style="flex:1;" />
+              <button class="btn btn-primary btn-sm" onclick="addNote()">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Transfer Status + Info -->
+        <div>
+          <div class="info-card" id="transfer-status-card" style="display:none;background:var(--yellow-light);border-color:#FDE68A;">
+            <div class="info-card-title" style="color:#92400E;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              Transfer Requested
+            </div>
+            <p id="transfer-status-text" style="font-size:13px;color:#92400E;"></p>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-title">Case Info</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:4px;">Submitted By</div>
+                <div id="info-submitted-by" style="font-size:13.5px;font-weight:500;">—</div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:4px;">Contact</div>
+                <div id="info-contact" style="font-size:13.5px;font-weight:500;">—</div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:4px;">Current Status</div>
+                <div id="info-status" style="font-size:13.5px;font-weight:500;">—</div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:4px;">Priority</div>
+                <div id="info-priority" style="font-size:13.5px;font-weight:500;">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Priority Modal -->
+<div class="modal-overlay" id="priority-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Update Priority</span>
+      <span class="modal-close" onclick="closePriorityModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <label class="radio-option"><input type="radio" name="priority" value="High"> <span>🔴 High</span></label>
+        <label class="radio-option"><input type="radio" name="priority" value="Medium"> <span>🟡 Medium</span></label>
+        <label class="radio-option"><input type="radio" name="priority" value="Low"> <span>🟢 Low</span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closePriorityModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePriority()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Update Status</span>
+      <span class="modal-close" onclick="closeStatusModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <label class="radio-option"><input type="radio" name="status" value="Assigned"> <span>📋 Assigned</span></label>
+        <label class="radio-option"><input type="radio" name="status" value="In Progress"> <span>⚙️ In Progress</span></label>
+        <label class="radio-option"><input type="radio" name="status" value="Transferred"> <span>🔄 Transferred</span></label>
+        <label class="radio-option"><input type="radio" name="status" value="Resolved"> <span>✅ Resolved</span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeStatusModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStatus()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="../../js/officer/officer-case-details.js"></script>
+</body>
+</html>

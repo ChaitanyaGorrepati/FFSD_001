@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivicTrack — Assigned Cases</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/officer.css" />
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">CT</div>
+      <span class="logo-name">CivicTrack</span>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Main</div>
+      <nav class="sidebar-nav">
+        <a href="officer-dashboard.html">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Dashboard
+        </a>
+        <a href="officer-assigned-cases.html" class="active">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Assigned Cases
+          <span class="badge-count" id="sb-assigned-count">0</span>
+        </a>
+        <a href="officer-transfer-requests.html">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          Transfer Requests
+          <span class="badge-count" id="sb-transfer-count">0</span>
+        </a>
+      </nav>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar" id="sidebar-avatar">?</div>
+        <div class="sidebar-user-info">
+          <div class="name" id="sidebar-name">Loading…</div>
+          <div class="role">Officer</div>
+        </div>
+      </div>
+      <button onclick="logout()" style="width:100%;margin-top:8px;padding:7px 10px;border-radius:6px;font-size:12.5px;font-weight:600;color:#94A3B8;background:transparent;border:1px solid rgba(255,255,255,.08);cursor:pointer;">
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>Officer Portal</span>
+        <span class="sep">›</span>
+        <span class="crumb-active">Assigned Cases</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="avatar sm" id="topbar-avatar">?</div>
+          <span class="name" id="topbar-name">Loading…</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Assigned Cases</h1>
+          <p class="page-subtitle">All cases currently assigned to you.</p>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="card" style="margin-bottom:20px;padding:14px 20px;">
+        <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;background:var(--border-light);border:1.5px solid var(--border);border-radius:var(--radius);padding:7px 12px;min-width:220px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="color:var(--text-muted)"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="search-input" placeholder="Search cases…" style="border:none;outline:none;background:transparent;font-size:13.5px;color:var(--text-primary);width:100%;" oninput="filterCases()" />
+          </div>
+          <div class="filter-tabs">
+            <span class="filter-tab active" data-filter="all" onclick="setFilter(this,'all')">All</span>
+            <span class="filter-tab" data-filter="Assigned" onclick="setFilter(this,'Assigned')">Assigned</span>
+            <span class="filter-tab" data-filter="In Progress" onclick="setFilter(this,'In Progress')">In Progress</span>
+            <span class="filter-tab" data-filter="Resolved" onclick="setFilter(this,'Resolved')">Resolved</span>
+            <span class="filter-tab" data-filter="Transferred" onclick="setFilter(this,'Transferred')">Transferred</span>
+            <span class="filter-tab" data-filter="Closed" onclick="setFilter(this,'Closed')">Closed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid" style="margin-bottom:20px;">
+        <div class="stat-card"><div class="stat-value" id="stat-assigned">0</div><div class="stat-label">Assigned</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-inprogress">0</div><div class="stat-label">In Progress</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-resolved">0</div><div class="stat-label">Resolved</div></div>
+        <div class="stat-card"><div class="stat-value" id="stat-transferred">0</div><div class="stat-label">Transferred</div></div>
+        
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Case ID</th>
+                <th>Title</th>
+                <th>Department</th>
+                <th>Zone</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="cases-body">
+              <tr><td colspan="8" class="empty-state">No cases assigned yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Priority Modal -->
+<div class="modal-overlay" id="priority-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Update Priority</span>
+      <span class="modal-close" onclick="closePriorityModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Case: <strong id="pm-case-id"></strong></p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <label class="radio-option"><input type="radio" name="priority" value="High"> <span>🔴 High</span></label>
+        <label class="radio-option"><input type="radio" name="priority" value="Medium"> <span>🟡 Medium</span></label>
+        <label class="radio-option"><input type="radio" name="priority" value="Low"> <span>🟢 Low</span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closePriorityModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePriority()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Modal -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Update Status</span>
+      <span class="modal-close" onclick="closeStatusModal()">×</span>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">Case: <strong id="sm-case-id"></strong></p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <label class="radio-option"><input type="radio" name="status" value="Assigned"> <span>📋 Assigned</span></label>
+        <label class="radio-option"><input type="radio" name="status" value="In Progress"> <span>⚙️ In Progress</span></label>
+        <label class="radio-option"><input type="radio" name="status" value="Transferred"> <span>🔄 Transferred</span></label>
+        <label class="radio-option"><input type="radio" name="status" value="Resolved"> <span>✅ Resolved</span></label>
+        <label class="radio-option"><input type="radio" name="status" value="Closed"> <span>✅ Closed</span></label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeStatusModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStatus()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="../../js/officer/officer-assigned-cases.js"></script>
+</body>
+</html>
