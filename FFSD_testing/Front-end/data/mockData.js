@@ -66,7 +66,7 @@ export const users = [
 
   // Zone D
   { id: "off13", name: "Vikram", role: "officer", department: "Road", zone: "Zone D" },
-  { id: "off14", name: "Kiran", role: "officer", department: "Water", zone: "Zone D" },
+  { id: "off14", name: "Raja Vara Prasad", role: "officer", department: "Water", zone: "Zone D" },
   { id: "off15", name: "Aisha", role: "officer", department: "Electricity", zone: "Zone D" },
   { id: "off16", name: "Rohit", role: "officer", department: "Sanitation", zone: "Zone D" },
 

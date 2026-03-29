@@ -8,9 +8,50 @@
   background: transparent; color: var(--gray-600);
   font-family: var(--font-body); transition: background .15s;
 }
-.tab-btn:hover { background: var(--gray-100); }
+.tab-btn:hover  { background: var(--gray-100); }
 .tab-btn.active { background: var(--red); color: #fff; }
 
-.actions-cell { display: flex; gap: 6px; align-items: center; }
+/* Citizen name cell — slightly muted */
+.citizen-cell { font-weight: 500; color: var(--gray-800); }
 
-.officer-name { font-style: italic; font-weight: 600; }
+/* Officer name */
+.officer-name { font-style: italic; font-weight: 700; color: var(--gray-800); }
+
+/* Date cell */
+.date-cell { font-size: 12.5px; color: var(--gray-600); white-space: nowrap; }
+
+/* Actions cell */
+.actions-cell { white-space: nowrap; }
+
+/* ── Vibrant red View Details button ── */
+.btn-view-red {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s, box-shadow .15s, transform .1s;
+  letter-spacing: .02em;
+}
+.btn-view-red:hover {
+  background: #C62828;
+  box-shadow: 0 3px 10px rgba(229,57,53,.35);
+  transform: translateY(-1px);
+}
+.btn-view-red:active { transform: translateY(0); }
+
+/* Empty state */
+.empty-td {
+  text-align: center;
+  color: var(--gray-400);
+  padding: 2.5rem;
+  font-size: 13px;
+}

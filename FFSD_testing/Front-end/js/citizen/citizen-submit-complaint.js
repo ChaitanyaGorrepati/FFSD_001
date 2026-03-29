@@ -113,26 +113,56 @@ function validateForm() {
   return valid;
 }
 
+// ── FIX 2: Encode uploaded files as base64 so they persist in localStorage ───
+/**
+ * Reads all files selected in fileInput and returns a Promise resolving to
+ * an array of { name, type, data } objects (data = base64 data-URL string).
+ * This is added as a NEW function – nothing existing is changed.
+ */
+function encodeAttachments() {
+  const files = Array.from(fileInput.files);
+  if (!files.length) return Promise.resolve([]);
+
+  return Promise.all(
+    files.map(file => new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        src:  e.target.result   // base64 data-URL – can be set as <img src>
+      });
+      reader.onerror = () => resolve({ name: file.name, type: file.type, size: file.size, src: "" });
+      reader.readAsDataURL(file);
+    }))
+  );
+}
+
 // ── Submit ────────────────────────────────────────────────────────────────────
-submitBtn.addEventListener("click", () => {
+submitBtn.addEventListener("click", async () => {          // ← made async for await
   if (!validateForm()) return;
 
   submitBtn.classList.add("loading");
   submitBtn.textContent = "Submitting...";
 
+  // ── FIX 2b: encode attachments before building data object ────────────────
+  const attachments = await encodeAttachments();
+
   const data = {
-    department:   deptSelect.value,
-    category:     catSelect.value,
-    zone:         zoneSelect.value,
-    title:        titleInput.value.trim(),
-    description:  descInput.value.trim(),
-    location:     locationInput.value.trim(),
-    phone:        phoneInput.value.trim(),
-    priority:     prioritySelect.value,
-    contactTime:  contactTime.value,
-    // ✅ Tag the case with the logged-in citizen's ID
-    submittedBy:  currentUser.id,
-    submittedName: currentUser.name
+    department:    deptSelect.value,
+    category:      catSelect.value,
+    zone:          zoneSelect.value,
+    title:         titleInput.value.trim(),
+    description:   descInput.value.trim(),
+    location:      locationInput.value.trim(),
+    phone:         phoneInput.value.trim(),
+    priority:      prioritySelect.value,
+    contactTime:   contactTime.value,
+    // ── FIX 1: send both fields so caseController can map to `citizen` ──────
+    submittedBy:   currentUser.id,
+    submittedName: currentUser.name,
+    // ── FIX 2c: attach encoded files to the case object ─────────────────────
+    attachments:   attachments        // ← new field, empty array if no files
   };
 
   setTimeout(() => {

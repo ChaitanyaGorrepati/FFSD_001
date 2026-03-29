@@ -22,10 +22,9 @@
   <a href="supervisor-delayed-cases.html" class="nav-item"><span class="nav-icon">⏰</span> Delayed Cases</a>
   <a href="supervisor-closure-requests.html" class="nav-item"><span class="nav-icon">✔️</span> Closure Requests</a>
   <div class="sidebar-bottom">
-    <a href="../../views/index.html" class="nav-item"><span class="nav-icon">🚪</span> Logout</a>
+    <a href="../../views/login.html" class="nav-item" onclick="sessionStorage.clear()"><span class="nav-icon">🚪</span> Logout</a>
     <div class="user-row">
-      <!-- FIX: IDs added, hardcoded identity removed -->
-      <div class="user-avatar" id="sidebar-avatar">—</div>
+      <div class="user-avatar" id="sidebar-avatar">?</div>
       <div class="user-info">
         <div class="user-name" id="sidebar-name">Loading…</div>
         <div class="user-role" id="sidebar-role">Supervisor</div>
@@ -41,130 +40,161 @@
       <span class="sep">›</span>
       <a href="supervisor-dashboard.html">Supervisor</a>
       <span class="sep">›</span>
+      <a href="supervisor-department-cases.html">Cases</a>
+      <span class="sep">›</span>
       <span class="current" id="breadcrumb-case">Case Details</span>
     </div>
     <div class="topbar-right">
       <button class="notif-btn">🔔<span class="notif-dot"></span></button>
-      <!-- FIX: IDs added, hardcoded identity removed -->
       <div class="user-chip">
-        <div class="user-avatar" style="width:28px;height:28px;font-size:11px;" id="topbar-avatar">—</div>
-        <span id="topbar-name">Loading…</span> ▾
+        <div class="user-avatar" style="width:28px;height:28px;font-size:11px;" id="topbar-avatar">?</div>
+        <span id="topbar-name">Supervisor</span> ▾
       </div>
     </div>
   </div>
 
   <div class="content">
     <div class="page-header">
-      <h1 class="page-title">Case Details</h1>
-      <p class="page-sub">Review complaint information, progress updates, and department actions.</p>
+      <div>
+        <h1 class="page-title">Case Details</h1>
+        <p class="page-sub">Review complaint information, progress updates, and department actions.</p>
+      </div>
+      <button class="btn-back" onclick="history.back()">← Back</button>
     </div>
 
     <div class="detail-layout">
-      <!-- LEFT -->
-      <div>
-        <!-- Complaint Summary -->
-        <div class="card detail-section">
-          <div class="card-header">
-            <div class="card-title">Complaint Summary</div>
+
+      <!-- ══ LEFT COLUMN ══════════════════════════════════════════════════ -->
+      <div class="left-col">
+
+        <!-- 1. Complaint Summary -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon blue-icon">📋</div>
+            <div class="section-title">Complaint Summary</div>
           </div>
-          <div class="info-grid">
-            <div class="info-item">
-              <div class="info-label">Case ID</div>
-              <div class="info-value" id="d-id">—</div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="s-label">Case ID</div>
+              <div class="s-value mono" id="d-id">—</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Category</div>
-              <div class="info-value" id="d-category">—</div>
+            <div class="summary-item">
+              <div class="s-label">Category</div>
+              <div class="s-value" id="d-category">—</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Citizen</div>
-              <div class="info-value" id="d-citizen">—</div>
+            <div class="summary-item">
+              <div class="s-label">Citizen</div>
+              <div class="s-value" id="d-citizen">—</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Location</div>
-              <div class="info-value" id="d-zone">—</div>
+            <div class="summary-item">
+              <div class="s-label">Location</div>
+              <div class="s-value" id="d-zone">—</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Priority</div>
-              <div class="info-value" id="d-priority">—</div>
+            <div class="summary-item">
+              <div class="s-label">Priority</div>
+              <div class="s-value" id="d-priority">—</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Status</div>
-              <div class="info-value" id="d-status">—</div>
+            <div class="summary-item">
+              <div class="s-label">Status</div>
+              <div class="s-value" id="d-status">—</div>
             </div>
-            <div class="info-item">
-              <div class="info-label">Date Submitted</div>
-              <div class="info-value" id="d-date">—</div>
+            <div class="summary-item">
+              <div class="s-label">Date Submitted</div>
+              <div class="s-value" id="d-date">—</div>
             </div>
           </div>
         </div>
 
-        <!-- Complaint Description -->
-        <div class="card detail-section">
-          <div class="card-header">
-            <div class="card-title">Complaint Description</div>
+        <!-- 2. Complaint Description + Photos -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon orange-icon">📝</div>
+            <div class="section-title">Complaint Description</div>
           </div>
-          <div class="desc-box">
+          <div class="desc-body">
             <p class="desc-text" id="d-description">No description provided.</p>
-            <div class="attachments-label">📎 Attachments</div>
-            <div class="attachments-grid" id="d-attachments">
-              <p style="font-size:13px;color:var(--gray-400);">No attachments.</p>
+          </div>
+          <div class="attach-section">
+            <div class="attach-label">
+              <span>📎</span> Attachments
+            </div>
+            <div class="attach-grid" id="d-attachments">
+              <p class="no-attach">No photos uploaded by citizen.</p>
             </div>
           </div>
         </div>
 
-        <!-- Assignment Details -->
-        <div class="card detail-section">
-          <div class="card-header">
-            <div class="card-title">Assignment Details</div>
+        <!-- 3. Assignment Details -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon purple-icon">🏢</div>
+            <div class="section-title">Assignment Details</div>
           </div>
-          <div class="assign-info">
-            <div class="assign-row">
-              <div class="assign-icon">🏢</div>
+          <div class="assign-grid">
+            <div class="assign-item">
+              <div class="assign-icon-wrap">🏢</div>
               <div>
                 <div class="assign-sub">Current Department</div>
                 <div class="assign-val" id="d-dept">—</div>
               </div>
             </div>
-            <div class="assign-row">
-              <div class="assign-icon">👤</div>
+            <div class="assign-item">
+              <div class="assign-icon-wrap">👤</div>
               <div>
                 <div class="assign-sub">Assigned Officer</div>
                 <div class="assign-val" id="d-officer">—</div>
               </div>
             </div>
-          </div>
-        </div>
-      </div><!-- /LEFT -->
-
-      <!-- RIGHT -->
-      <div class="right-stack">
-        <!-- Notes -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Notes</div>
-          </div>
-          <div class="notes-area">
-            <div id="notes-list"></div>
-            <div class="note-input-row">
-              <input type="text" class="note-input" id="note-input" placeholder="Add a note…"/>
-              <button class="btn-primary" id="add-note-btn" style="white-space:nowrap;">Add</button>
+            <div class="assign-item">
+              <div class="assign-icon-wrap">📅</div>
+              <div>
+                <div class="assign-sub">Date Assigned</div>
+                <div class="assign-val" id="d-assigned-date">—</div>
+              </div>
+            </div>
+            <div class="assign-item">
+              <div class="assign-icon-wrap">⏱</div>
+              <div>
+                <div class="assign-sub">Estimated Resolution</div>
+                <div class="assign-val" id="d-est-resolution">—</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Timeline -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Timeline</div>
+        <!-- 4. Case Activity -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon green-icon">⚡</div>
+            <div class="section-title">Case Activity</div>
           </div>
-          <div class="timeline" id="timeline-list"></div>
+          <div class="activity-wrap" id="activity-list">
+            <!-- populated by JS -->
+          </div>
         </div>
 
-        <!-- Back button -->
-        <button class="btn-outline" id="back-btn" onclick="history.back()"
-          style="width:100%;justify-content:center;">← Go Back</button>
-      </div><!-- /RIGHT -->
+      </div><!-- /left-col -->
+
+      <!-- ══ RIGHT COLUMN ═════════════════════════════════════════════════ -->
+      <div class="right-col">
+
+        <!-- Notes -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon red-icon">💬</div>
+            <div class="section-title">Notes</div>
+          </div>
+          <div class="notes-body">
+            <div id="notes-list"></div>
+            <div class="note-input-row">
+              <input type="text" class="note-input" id="note-input" placeholder="Add a supervisor note…"/>
+              <button class="btn-add-note" id="add-note-btn">Add</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /right-col -->
+
     </div><!-- /detail-layout -->
   </div><!-- /content -->
 </main>

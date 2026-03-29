@@ -55,15 +55,20 @@ function saveAllCases(cases) {
  * A case is visible to the supervisor once its status moves past "Submitted"
  * (i.e. once an officer has been auto-assigned, which sets it to "Assigned").
  * Supervisor sees the case from "Assigned" onward.
+ *
+ * Also normalises the `citizen` field so that legacy cases stored with
+ * `submittedName` (before the caseController fix) still display correctly.
  */
 export function getCases() {
   const supervisor = getLoggedInSupervisor();
   if (!supervisor || supervisor.role !== "supervisor") return [];
 
-  return getAllCasesRaw().filter(c =>
-    c.department === supervisor.department &&
-    c.status !== "Submitted"
-  );
+  return getAllCasesRaw()
+    .filter(c =>
+      c.department === supervisor.department &&
+      c.status !== "Submitted"
+    )
+    .map(normaliseCitizen);  // ← ensure `citizen` is always populated
 }
 
 export function updateCase(id, updates) {
@@ -73,9 +78,21 @@ export function updateCase(id, updates) {
   saveAllCases(cases);
 }
 
+/**
+ * Ensures `c.citizen` is always set, falling back to `submittedName` for
+ * cases submitted before the caseController fix was deployed.
+ */
+function normaliseCitizen(c) {
+  if (!c.citizen && c.submittedName) {
+    return { ...c, citizen: c.submittedName };
+  }
+  return c;
+}
+
 /** Lookup by id across ALL cases (not just supervisor's dept) so links always work */
 export function getCaseById(id) {
-  return getAllCasesRaw().find(c => c.id === id) || null;
+  const c = getAllCasesRaw().find(c => c.id === id) || null;
+  return c ? normaliseCitizen(c) : null;
 }
 
 export function addNoteToCase(id, note) {

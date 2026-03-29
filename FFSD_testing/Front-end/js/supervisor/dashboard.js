@@ -10,13 +10,13 @@ import {
   formatDate
 } from './supervisorData.js';
 
-// ── Guard: redirect if not logged in as supervisor ────────────────────────────
+// ── Guard ─────────────────────────────────────────────────────────────────────
 const supervisor = getLoggedInSupervisor();
 if (!supervisor || supervisor.role !== "supervisor") {
   window.location.href = "../../views/role-selection.html";
 }
 
-// ── Populate identity (sidebar + topbar) ──────────────────────────────────────
+// ── Identity ──────────────────────────────────────────────────────────────────
 function applyIdentity() {
   if (!supervisor) return;
   const initials = supervisor.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
@@ -26,8 +26,7 @@ function applyIdentity() {
   set("sidebar-role",   `Supervisor – ${supervisor.department}`);
   set("topbar-avatar",  initials);
   set("topbar-name",    supervisor.name);
-  set("supervisor-name", supervisor.name);
-  set("supervisor-dept", `${supervisor.department} Department`);
+  set("dept-label",     supervisor.department);
 }
 applyIdentity();
 
@@ -36,15 +35,14 @@ const months = ["January","February","March","April","May","June","July","August
 const monthEl = document.getElementById("current-month");
 if (monthEl) monthEl.textContent = `${months[new Date().getMonth()]} ${new Date().getFullYear()}`;
 
-// ── Dept label in subtitle ────────────────────────────────────────────────────
-const deptLabelEl = document.getElementById("dept-label");
-if (deptLabelEl && supervisor) deptLabelEl.textContent = supervisor.department;
-
 // ── Stats ─────────────────────────────────────────────────────────────────────
+// Active = Assigned + Accepted + In Progress  (everything not yet resolved/closed)
+// Transferred = cases with a transfer request
+// Closed = Resolved + Closed
 function updateStats(cases) {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   set("stat-dept",     cases.length);
-  set("stat-active",   cases.filter(c => ["In Progress","Accepted"].includes(c.status)).length);
+  set("stat-active",   cases.filter(c => ["Assigned","Accepted","In Progress","Waiting For Citizen"].includes(c.status)).length);
   set("stat-transfer", cases.filter(c => c.transfer?.requested).length);
   set("stat-closed",   cases.filter(c => ["Resolved","Closed"].includes(c.status)).length);
 }
@@ -55,14 +53,14 @@ let currentFilter = "all";
 
 function renderTable(filter = "all") {
   let cases = getCases();
-  if (filter === "active")     cases = cases.filter(c => ["In Progress","Accepted"].includes(c.status));
+  if (filter === "active")     cases = cases.filter(c => ["Assigned","Accepted","In Progress","Waiting For Citizen"].includes(c.status));
   if (filter === "unassigned") cases = cases.filter(c => !c.assignedTo);
   const recent = cases.slice(0, 10);
   if (!tbody) return;
 
   if (recent.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:2rem;font-size:13px;">
-      No ${supervisor?.department || ""} cases yet. Cases appear here once a citizen files a complaint.
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-td">
+      No ${supervisor?.department || ""} cases yet. Cases appear once a citizen files a complaint and an officer acts on it.
     </td></tr>`;
     return;
   }
@@ -72,11 +70,11 @@ function renderTable(filter = "all") {
     return `
     <tr>
       <td><a class="case-id-link" href="case-details.html?id=${c.id}">${c.id}</a></td>
-      <td>${c.citizen || "—"}</td>
+      <td class="citizen-cell">${c.citizen || "—"}</td>
       <td>${c.category}</td>
       <td>${c.assignedTo
-          ? `<em style="font-weight:600;">${officerName}</em>`
-          : `<span style="color:var(--gray-400);">Unassigned</span>`}</td>
+          ? `<em class="officer-name">${officerName}</em>`
+          : `<span class="text-muted">Unassigned</span>`}</td>
       <td>${statusBadge(c.status)}</td>
       <td>${priorityBadge(c.priority)}</td>
       <td>${c.zone}</td>
@@ -95,14 +93,13 @@ document.querySelectorAll(".tab-btn[data-filter]").forEach(btn => {
   });
 });
 
-// ── Officer workload ──────────────────────────────────────────────────────────
+// ── Workload ──────────────────────────────────────────────────────────────────
 const workloadList = document.getElementById("workload-list");
-
 function renderWorkload() {
   if (!workloadList) return;
   const officers = getOfficersWorkload();
   if (!officers.length) {
-    workloadList.innerHTML = `<p style="color:var(--gray-400);font-size:13px;padding:12px 20px;">No officer data available.</p>`;
+    workloadList.innerHTML = `<p class="text-muted" style="padding:12px 20px;font-size:13px;">No officer data available.</p>`;
     return;
   }
   workloadList.innerHTML = officers.map(o => {
@@ -111,7 +108,7 @@ function renderWorkload() {
     return `
       <div class="workload-item">
         <div class="workload-top">
-          <span class="workload-name">${o.name} <small style="color:var(--gray-400);font-weight:400;">(${o.zone})</small></span>
+          <span class="workload-name">${o.name} <small class="zone-tag">(${o.zone})</small></span>
           <span class="workload-count">${o.assigned}/${o.max}</span>
         </div>
         <div class="progress-bar-bg">
@@ -121,7 +118,7 @@ function renderWorkload() {
   }).join("");
 }
 
-// ── Weekly chart (real data) ──────────────────────────────────────────────────
+// ── Weekly chart ──────────────────────────────────────────────────────────────
 function drawChart() {
   const canvas = document.getElementById("weekChart");
   if (!canvas) return;
@@ -129,29 +126,24 @@ function drawChart() {
   canvas.width  = canvas.parentElement.offsetWidth || 240;
   canvas.height = 130;
 
-  // Build last-7-day labels
   const dayLabels = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
     dayLabels.push(["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()]);
   }
 
-  const data   = getWeeklyCaseCounts(); // real counts from localStorage
+  const data   = getWeeklyCaseCounts();
   const W = canvas.width, H = canvas.height;
   const padL = 28, padR = 8, padT = 10, padB = 24;
   const bw     = (W - padL - padR) / data.length;
-  const maxVal = Math.max(...data, 1); // avoid /0
+  const maxVal = Math.max(...data, 1);
 
   ctx.clearRect(0, 0, W, H);
-
-  // Grid lines
   ctx.strokeStyle = "#E8EAED"; ctx.lineWidth = 1;
   [0, 0.25, 0.5, 0.75, 1].forEach(f => {
     const y = padT + (H - padT - padB) * (1 - f);
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
   });
-
-  // Y-axis max label
   ctx.fillStyle = "#9AA0A6"; ctx.font = "9px DM Sans, sans-serif"; ctx.textAlign = "right";
   ctx.fillText(maxVal, padL - 4, padT + 4);
 
