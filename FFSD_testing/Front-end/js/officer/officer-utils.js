@@ -72,8 +72,10 @@ export function updateSidebarBadges(officerId) {
   const cases = getOfficerCases(officerId);
   const sbAssigned = document.getElementById("sb-assigned-count");
   const sbTransfer = document.getElementById("sb-transfer-count");
+  const sbClosure  = document.getElementById("sb-closure-count");
   if (sbAssigned) sbAssigned.textContent = cases.filter(c => c.status === "Assigned").length;
   if (sbTransfer) sbTransfer.textContent = cases.filter(c => c.transfer && c.transfer.requested).length;
+  if (sbClosure)  sbClosure.textContent  = cases.filter(c => c.closureRequest && c.closureRequest.requested).length;
 }
 
 // ── Badge HTML ───────────────────────────────────────────────────────────────
