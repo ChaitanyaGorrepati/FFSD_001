@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CivicTrack – Supervisor Dashboard</title>
+  <link rel="stylesheet" href="../../css/supervisor/dashboard.css"/>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">CT</div>
+    <span class="logo-name">CivicTrack</span>
+  </div>
+  <div class="sidebar-section">Overview</div>
+  <a href="supervisor-dashboard.html" class="nav-item active"><span class="nav-icon">🏠</span> Dashboard</a>
+  <div class="sidebar-section">Case Management</div>
+  <a href="supervisor-department-cases.html"  class="nav-item"><span class="nav-icon">📁</span> Department Cases</a>
+  <a href="supervisor-accept-transfers.html"  class="nav-item"><span class="nav-icon">✅</span> Accept Transfers</a>
+  <a href="supervisor-transfer-requests.html" class="nav-item"><span class="nav-icon">↔️</span> Transfer Requests</a>
+  <a href="supervisor-delayed-cases.html"     class="nav-item"><span class="nav-icon">⏰</span> Delayed Cases</a>
+  <a href="supervisor-closure-requests.html"  class="nav-item"><span class="nav-icon">✔️</span> Closure Requests</a>
+  <div class="sidebar-bottom">
+    <a href="../../views/login.html" class="nav-item" onclick="sessionStorage.clear()"><span class="nav-icon">🚪</span> Logout</a>
+    <div class="user-row">
+      <div class="user-avatar" id="sidebar-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Loading…</div>
+        <div class="user-role" id="sidebar-role">Supervisor</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1 class="page-title">Dashboard</h1>
+      <p style="font-size:12.5px;color:var(--gray-600);">
+        <span id="dept-label"></span> Division –
+        <span id="current-month"></span> Overview
+      </p>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+      <div class="user-chip">
+        <div class="user-avatar" id="topbar-avatar" style="width:28px;height:28px;font-size:11px;">?</div>
+        <span id="topbar-name">Supervisor</span> ▾
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div style="margin-bottom:20px;">
+      <a href="supervisor-department-cases.html" class="btn-primary">View All Cases</a>
+    </div>
+
+    <!-- STATS -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-icon blue">💼</div>
+        <div class="stat-num" id="stat-dept">0</div>
+        <div class="stat-label">Department Cases</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow">⚡</div>
+        <div class="stat-num" id="stat-active">0</div>
+        <div class="stat-label">Active Cases</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon purple">⇄</div>
+        <div class="stat-num" id="stat-transfer">0</div>
+        <div class="stat-label">Transferred Cases</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">✔</div>
+        <div class="stat-num" id="stat-closed">0</div>
+        <div class="stat-label">Closed Cases</div>
+      </div>
+    </div>
+
+    <!-- BOTTOM GRID -->
+    <div class="bottom-grid">
+      <!-- RECENT CASES -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Recent Cases</div>
+            <div class="card-sub">Latest cases in your department</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="tab-row">
+              <button class="tab-btn active" data-filter="all">All</button>
+              <button class="tab-btn" data-filter="active">Active</button>
+              <button class="tab-btn" data-filter="unassigned">Unassigned</button>
+            </div>
+            <a href="supervisor-department-cases.html" class="see-all">See all →</a>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Case ID</th><th>Citizen</th><th>Category</th>
+                <th>Officer</th><th>Status</th><th>Priority</th><th>Zone</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="cases-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="right-col">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Officer Workload</div></div>
+          <div class="workload-list" id="workload-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Cases This Week</div></div>
+          <div style="padding:16px 20px 20px;">
+            <canvas id="weekChart" height="130"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="../../js/supervisor/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CivicTrack – Closure Requests</title>
+  <link rel="stylesheet" href="../../css/supervisor/closure-requests.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">CT</div>
+    <span class="logo-name">CivicTrack</span>
+  </div>
+  <div class="sidebar-section">Overview</div>
+  <a href="supervisor-dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <div class="sidebar-section">Case Management</div>
+  <a href="supervisor-department-cases.html" class="nav-item"><span class="nav-icon">📁</span> Department Cases</a>
+  <a href="supervisor-accept-transfers.html" class="nav-item"><span class="nav-icon">✅</span> Accept Transfers</a>
+  <a href="supervisor-transfer-requests.html" class="nav-item"><span class="nav-icon">↔️</span> Transfer Requests</a>
+  <a href="supervisor-delayed-cases.html" class="nav-item"><span class="nav-icon">⏰</span> Delayed Cases</a>
+  <a href="supervisor-closure-requests.html" class="nav-item active"><span class="nav-icon">✔️</span> Closure Requests</a>
+  <div class="sidebar-bottom">
+    <a href="../../views/index.html" class="nav-item"><span class="nav-icon">🚪</span> Logout</a>
+    <div class="user-row">
+      <!-- FIX: IDs added, hardcoded identity removed -->
+      <div class="user-avatar" id="sidebar-avatar">—</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Loading…</div>
+        <div class="user-role" id="sidebar-role">Supervisor</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <a href="supervisor-dashboard.html">CivicTrack</a>
+      <span class="sep">›</span>
+      <a href="supervisor-dashboard.html">Supervisor</a>
+      <span class="sep">›</span>
+      <span class="current">Closure Requests</span>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+      <!-- FIX: IDs added, hardcoded identity removed -->
+      <div class="user-chip">
+        <div class="user-avatar" style="width:28px;height:28px;font-size:11px;" id="topbar-avatar">—</div>
+        <span id="topbar-name">Loading…</span> ▾
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <h1 class="page-title">Closure Approval Requests</h1>
+      <p class="page-sub">Review officer requests to close completed cases.</p>
+    </div>
+
+    <!-- Stats -->
+    <!-- FIX: hardcoded numbers (5, 3, 1) replaced with 0; JS will overwrite on load -->
+    <div class="stat-row">
+      <div class="stat-card orange-top">
+        <div class="stat-num" id="stat-pending">0</div>
+        <div class="stat-label">Pending Requests</div>
+      </div>
+      <div class="stat-card green-top">
+        <div class="stat-num" id="stat-approved">0</div>
+        <div class="stat-label">Approved Today</div>
+      </div>
+      <div class="stat-card red-top">
+        <div class="stat-num" id="stat-rejected">0</div>
+        <div class="stat-label">Rejected Requests</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Pending Closure Requests</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Case ID</th>
+              <th>Category</th>
+              <th>Assigned Officer</th>
+              <th>Resolution Summary</th>
+              <th>Date Submitted</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="closure-tbody"></tbody>
+        </table>
+      </div>
+      <div id="empty-state" class="empty-state" style="display:none;">
+        <div class="empty-icon">✔️</div>
+        No closure requests pending.
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="../../js/supervisor/closure-requests.js"></script>
+</body>
+</html>

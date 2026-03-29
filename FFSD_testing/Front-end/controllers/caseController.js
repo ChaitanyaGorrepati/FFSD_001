@@ -4,7 +4,6 @@ import { getOfficers } from "../models/userModel.js";
 // 🔥 AUTO ASSIGNMENT
 function assignOfficer(department, zone) {
   const officers = getOfficers();
-
   return officers.find(
     o => o.department === department && o.zone === zone
   );
@@ -36,7 +35,7 @@ export function handleAddCase(data) {
   return { success: true };
 }
 
-// READ
+// READ ALL
 export function handleGetCases() {
   return getCases();
 }
@@ -69,6 +68,26 @@ export function handleTransferRequest(id, toDept) {
       status: "pending"
     }
   });
-
   return { success: true };
+}
+
+// GET CASES FOR SUPERVISOR
+// Filters by department AND only shows cases the officer has acted on.
+// "Assigned" is excluded — that is the raw state right after citizen submission,
+// before the officer accepts or rejects. Supervisor sees the case only after
+// the officer changes the status to anything below.
+export function handleGetCasesForSupervisor(department) {
+  const cases = getCases();
+  return cases.filter(c =>
+    c.department === department &&
+    [
+      "Accepted",
+      "In Progress",
+      "Waiting For Citizen",
+      "Resolved",
+      "Closed",
+      "Transferred",
+      "Rejected"
+    ].includes(c.status)
+  );
 }

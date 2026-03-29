@@ -3,7 +3,8 @@ import {
   handleGetCases,
   handleUpdateStatus,
   handleAddNote,
-  handleTransferRequest
+  handleTransferRequest,
+  handleGetCasesForSupervisor
 } from "../controllers/caseController.js";
 
 export function submitCase(data) {
@@ -24,4 +25,8 @@ export function addNote(id, note) {
 
 export function requestTransfer(id, dept) {
   return handleTransferRequest(id, dept);
+}
+
+export function fetchCasesForSupervisor(department) {
+  return handleGetCasesForSupervisor(department);
 }

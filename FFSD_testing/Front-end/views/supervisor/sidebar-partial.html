@@ -1,0 +1,25 @@
+<!-- SIDEBAR TEMPLATE (copy into every supervisor HTML) -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">CT</div>
+    <span class="logo-name">CivicTrack</span>
+  </div>
+  <div class="sidebar-section">Overview</div>
+  <a href="supervisor-dashboard.html"         class="nav-item" id="nav-dashboard">    <span class="nav-icon">🏠</span> Dashboard</a>
+  <div class="sidebar-section">Case Management</div>
+  <a href="supervisor-department-cases.html"   class="nav-item" id="nav-dept">         <span class="nav-icon">📁</span> Department Cases</a>
+  <a href="supervisor-accept-transfers.html"   class="nav-item" id="nav-accept">       <span class="nav-icon">✅</span> Accept Transfers</a>
+  <a href="supervisor-transfer-requests.html"  class="nav-item" id="nav-transfer">     <span class="nav-icon">↔️</span> Transfer Requests</a>
+  <a href="supervisor-delayed-cases.html"      class="nav-item" id="nav-delayed">      <span class="nav-icon">⏰</span> Delayed Cases</a>
+  <a href="supervisor-closure-requests.html"   class="nav-item" id="nav-closure">      <span class="nav-icon">✔️</span> Closure Requests</a>
+  <div class="sidebar-bottom">
+    <a href="../../views/login.html" class="nav-item" onclick="sessionStorage.clear()"><span class="nav-icon">🚪</span> Logout</a>
+    <div class="user-row">
+      <div class="user-avatar" id="sidebar-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Loading…</div>
+        <div class="user-role" id="sidebar-role">Supervisor</div>
+      </div>
+    </div>
+  </div>
+</aside>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CivicTrack – Case Details</title>
+  <link rel="stylesheet" href="../../css/supervisor/case-details.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">CT</div>
+    <span class="logo-name">CivicTrack</span>
+  </div>
+  <div class="sidebar-section">Overview</div>
+  <a href="supervisor-dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <div class="sidebar-section">Case Management</div>
+  <a href="supervisor-department-cases.html" class="nav-item"><span class="nav-icon">📁</span> Department Cases</a>
+  <a href="supervisor-accept-transfers.html" class="nav-item"><span class="nav-icon">✅</span> Accept Transfers</a>
+  <a href="supervisor-transfer-requests.html" class="nav-item"><span class="nav-icon">↔️</span> Transfer Requests</a>
+  <a href="supervisor-delayed-cases.html" class="nav-item"><span class="nav-icon">⏰</span> Delayed Cases</a>
+  <a href="supervisor-closure-requests.html" class="nav-item"><span class="nav-icon">✔️</span> Closure Requests</a>
+  <div class="sidebar-bottom">
+    <a href="../../views/index.html" class="nav-item"><span class="nav-icon">🚪</span> Logout</a>
+    <div class="user-row">
+      <!-- FIX: IDs added, hardcoded identity removed -->
+      <div class="user-avatar" id="sidebar-avatar">—</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Loading…</div>
+        <div class="user-role" id="sidebar-role">Supervisor</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <a href="supervisor-dashboard.html">CivicTrack</a>
+      <span class="sep">›</span>
+      <a href="supervisor-dashboard.html">Supervisor</a>
+      <span class="sep">›</span>
+      <span class="current" id="breadcrumb-case">Case Details</span>
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+      <!-- FIX: IDs added, hardcoded identity removed -->
+      <div class="user-chip">
+        <div class="user-avatar" style="width:28px;height:28px;font-size:11px;" id="topbar-avatar">—</div>
+        <span id="topbar-name">Loading…</span> ▾
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <h1 class="page-title">Case Details</h1>
+      <p class="page-sub">Review complaint information, progress updates, and department actions.</p>
+    </div>
+
+    <div class="detail-layout">
+      <!-- LEFT -->
+      <div>
+        <!-- Complaint Summary -->
+        <div class="card detail-section">
+          <div class="card-header">
+            <div class="card-title">Complaint Summary</div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Case ID</div>
+              <div class="info-value" id="d-id">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Category</div>
+              <div class="info-value" id="d-category">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Citizen</div>
+              <div class="info-value" id="d-citizen">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Location</div>
+              <div class="info-value" id="d-zone">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Priority</div>
+              <div class="info-value" id="d-priority">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Status</div>
+              <div class="info-value" id="d-status">—</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Date Submitted</div>
+              <div class="info-value" id="d-date">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Complaint Description -->
+        <div class="card detail-section">
+          <div class="card-header">
+            <div class="card-title">Complaint Description</div>
+          </div>
+          <div class="desc-box">
+            <p class="desc-text" id="d-description">No description provided.</p>
+            <div class="attachments-label">📎 Attachments</div>
+            <div class="attachments-grid" id="d-attachments">
+              <p style="font-size:13px;color:var(--gray-400);">No attachments.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assignment Details -->
+        <div class="card detail-section">
+          <div class="card-header">
+            <div class="card-title">Assignment Details</div>
+          </div>
+          <div class="assign-info">
+            <div class="assign-row">
+              <div class="assign-icon">🏢</div>
+              <div>
+                <div class="assign-sub">Current Department</div>
+                <div class="assign-val" id="d-dept">—</div>
+              </div>
+            </div>
+            <div class="assign-row">
+              <div class="assign-icon">👤</div>
+              <div>
+                <div class="assign-sub">Assigned Officer</div>
+                <div class="assign-val" id="d-officer">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /LEFT -->
+
+      <!-- RIGHT -->
+      <div class="right-stack">
+        <!-- Notes -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Notes</div>
+          </div>
+          <div class="notes-area">
+            <div id="notes-list"></div>
+            <div class="note-input-row">
+              <input type="text" class="note-input" id="note-input" placeholder="Add a note…"/>
+              <button class="btn-primary" id="add-note-btn" style="white-space:nowrap;">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Timeline</div>
+          </div>
+          <div class="timeline" id="timeline-list"></div>
+        </div>
+
+        <!-- Back button -->
+        <button class="btn-outline" id="back-btn" onclick="history.back()"
+          style="width:100%;justify-content:center;">← Go Back</button>
+      </div><!-- /RIGHT -->
+    </div><!-- /detail-layout -->
+  </div><!-- /content -->
+</main>
+
+<script type="module" src="../../js/supervisor/case-details.js"></script>
+</body>
+</html>

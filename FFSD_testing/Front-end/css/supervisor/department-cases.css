@@ -1,0 +1,16 @@
+/* department-cases.css */
+@import 'supervisor-base.css';
+
+.tab-row { display: flex; gap: 4px; }
+.tab-btn {
+  padding: 6px 14px; border-radius: 6px;
+  font-size: 12.5px; border: none; cursor: pointer;
+  background: transparent; color: var(--gray-600);
+  font-family: var(--font-body); transition: background .15s;
+}
+.tab-btn:hover { background: var(--gray-100); }
+.tab-btn.active { background: var(--red); color: #fff; }
+
+.actions-cell { display: flex; gap: 6px; align-items: center; }
+
+.officer-name { font-style: italic; font-weight: 600; }

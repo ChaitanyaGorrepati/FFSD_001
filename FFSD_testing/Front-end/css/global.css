@@ -63,6 +63,7 @@ input, select, textarea { font-family: inherit; }
   overflow: hidden;
 }
 
+
 /* ── Sidebar ── */
 .sidebar {
   width: var(--sidebar-w);
