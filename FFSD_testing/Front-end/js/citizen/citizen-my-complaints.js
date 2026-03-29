@@ -1,16 +1,35 @@
-// js/citizen-my-complaints.js
+// js/citizen/citizen-my-complaints.js
 import { fetchCases } from "../index.js";
 
+
+
+// ── 1. Get session FIRST (must be before anything uses currentUser) ────────────
+const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
+
+if (!currentUser || currentUser.role !== "citizen") {
+  window.location.href = "../../login.html";
+}
+
+// ── 2. Update name & avatar ───────────────────────────────────────────────────
+const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+ 
+document.getElementById("sidebarUserName").textContent = currentUser.name;
+document.getElementById("topbarUserName").textContent  = currentUser.name;
+document.querySelectorAll(".avatar").forEach(el => el.textContent = initials);
+
+// ── State ─────────────────────────────────────────────────────────────────────
 let allCases = [];
 let currentFilter = "All";
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function getStatusBadge(status) {
   const map = {
     "Assigned":    "badge-assigned",
     "In Progress": "badge-progress",
     "Resolved":    "badge-resolved",
     "Closed":      "badge-closed",
-    "Pending":     "badge-pending"
+    "Pending":     "badge-pending",
+    "Submitted":   "badge-pending"
   };
   return `<span class="badge ${map[status] || "badge-closed"}">${status}</span>`;
 }
@@ -27,13 +46,14 @@ function addDays(iso, days) {
   return formatDate(d.toISOString());
 }
 
+// ── Render ────────────────────────────────────────────────────────────────────
 function renderTable(cases) {
   const tbody = document.getElementById("complaintsTableBody");
   document.getElementById("totalLabel").textContent =
     `${cases.length} complaint${cases.length !== 1 ? "s" : ""} found.`;
 
   if (!cases.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No data available</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No complaints found.</td></tr>`;
     return;
   }
 
@@ -78,12 +98,15 @@ function applyFilters() {
   renderTable(filtered);
 }
 
+// ── Init ──────────────────────────────────────────────────────────────────────
 function init() {
   try {
-    allCases = fetchCases();
+    // Only show this citizen's cases
+    const all = fetchCases();
+    allCases = all.filter(c => c.submittedBy === currentUser.id);
+
     renderTable(allCases);
 
-    // Filter tabs
     document.getElementById("filterTabs").addEventListener("click", e => {
       const tab = e.target.closest(".filter-tab");
       if (!tab) return;
@@ -93,7 +116,6 @@ function init() {
       applyFilters();
     });
 
-    // Search
     document.getElementById("searchInput").addEventListener("input", applyFilters);
   } catch (err) {
     console.error("My complaints error:", err);

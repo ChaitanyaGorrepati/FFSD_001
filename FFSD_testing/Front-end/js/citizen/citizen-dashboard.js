@@ -1,18 +1,32 @@
-// js/citizen-dashboard.js
+// js/citizen/citizen-dashboard.js
+
 import { fetchCases } from "../index.js";
 
-const CURRENT_USER = "Ahmed Khalid"; // Replace with session-based user
+// ── 1. Get session FIRST (must be before anything uses currentUser) ────────────
+const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
 
+if (!currentUser || currentUser.role !== "citizen") {
+  window.location.href = "../../login.html";
+}
+
+// ── 2. Update name & avatar ───────────────────────────────────────────────────
+const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+ 
+document.getElementById("sidebarUserName").textContent = currentUser.name;
+document.getElementById("topbarUserName").textContent  = currentUser.name;
+document.querySelectorAll(".avatar").forEach(el => el.textContent = initials);
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function getStatusBadge(status) {
   const map = {
     "Assigned":    "badge-assigned",
     "In Progress": "badge-progress",
     "Resolved":    "badge-resolved",
     "Closed":      "badge-closed",
-    "Pending":     "badge-pending"
+    "Pending":     "badge-pending",
+    "Submitted":   "badge-pending"
   };
-  const cls = map[status] || "badge-closed";
-  return `<span class="badge ${cls}">${status}</span>`;
+  return `<span class="badge ${map[status] || "badge-closed"}">${status}</span>`;
 }
 
 function formatDate(iso) {
@@ -26,6 +40,7 @@ function showAlert(msg) {
   banner.style.display = "flex";
 }
 
+// ── Render ────────────────────────────────────────────────────────────────────
 function renderStats(cases) {
   document.getElementById("statTotal").textContent    = cases.length;
   document.getElementById("statOpen").textContent     = cases.filter(c => c.status === "Assigned").length;
@@ -33,11 +48,9 @@ function renderStats(cases) {
   document.getElementById("statResolved").textContent = cases.filter(c => c.status === "Resolved").length;
 
   const subtitle = document.getElementById("dashSubtitle");
-  if (cases.length === 0) {
-    subtitle.textContent = "No complaints submitted yet.";
-  } else {
-    subtitle.textContent = `You have ${cases.length} complaint${cases.length > 1 ? "s" : ""} on record.`;
-  }
+  subtitle.textContent = cases.length === 0
+    ? "No complaints submitted yet."
+    : `You have ${cases.length} complaint${cases.length > 1 ? "s" : ""} on record.`;
 }
 
 function renderTable(cases) {
@@ -49,7 +62,6 @@ function renderTable(cases) {
   }
 
   const recent = cases.slice(-5).reverse();
-
   tbody.innerHTML = recent.map(c => `
     <tr>
       <td><span class="case-id">${c.id}</span></td>
@@ -65,15 +77,18 @@ function renderTable(cases) {
   `).join("");
 }
 
+// ── Init ──────────────────────────────────────────────────────────────────────
 function init() {
   try {
-    const cases = fetchCases();
-    renderStats(cases);
-    renderTable(cases);
+    // Filter cases to only this citizen's submissions
+    const allCases = fetchCases();
+    const myCases  = allCases.filter(c => c.submittedBy === currentUser.id);
 
-    // Show alert if any pending transfer
-    const hasPending = cases.some(c => c.transfer?.status === "pending");
-    if (hasPending) showAlert("One or more cases have a pending transfer request.");
+    renderStats(myCases);
+    renderTable(myCases);
+
+    const hasPending = myCases.some(c => c.transfer?.status === "pending");
+    if (hasPending) showAlert("One or more of your cases have a pending transfer request.");
   } catch (err) {
     console.error("Dashboard init error:", err);
     document.getElementById("recentTableBody").innerHTML =

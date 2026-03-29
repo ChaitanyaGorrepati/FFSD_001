@@ -1,16 +1,11 @@
 /**
- * main.js
- * Place at: js/main.js  (or root entry point)
- *
- * ✔  ONLY handles app initialization.
- * ✔  Does NOT modify any model / controller / route.
- *
- * Called once on app start to seed localStorage with mock cases if empty.
+ * main.js — Place at: js/main.js
+ * Seeds localStorage with mock cases AND users on first load.
  */
 
-import { initCases } from "./index.js";
+import { initCases, initUsers } from "./index.js";
 
-// Seed localStorage on first load
 initCases();
+initUsers();
 
 console.log("[CivicTrack] App initialised.");
