@@ -552,3 +552,6 @@ input, select, textarea { font-family: inherit; }
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
 .font-mono { font-family: 'DM Mono', monospace; }
+.hidden {
+  display: none !important;
+}

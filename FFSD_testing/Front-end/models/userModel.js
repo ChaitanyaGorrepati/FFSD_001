@@ -54,3 +54,19 @@ export function createCitizenAccount({ name, username, password }) {
 
   return { success: true, user: newUser };
 }
+
+export function addUser(user) {
+  const list = getUsers();
+  list.push(user);
+  saveUsers(list);
+}
+
+export function updateUser(id, updates) {
+  const list = getUsers().map(u => u.id === id ? { ...u, ...updates } : u);
+  saveUsers(list);
+}
+
+export function deleteUser(id) {
+  const list = getUsers().filter(u => u.id !== id);
+  saveUsers(list);
+}
