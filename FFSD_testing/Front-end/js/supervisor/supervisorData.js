@@ -4,8 +4,7 @@
 // NO predefined mock cases – everything comes from actual citizen submissions.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { getCurrentUser } from "../utils.js";
-import { users }          from "../../data/mockData.js";
+import { users } from "../../data/mockData.js";
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export function getLoggedInSupervisor() {
@@ -45,6 +44,12 @@ function normaliseCitizen(c) {
 }
 
 // ── Cases for this supervisor's OWN department ────────────────────────────────
+/**
+ * Returns all cases where c.department === supervisor.department
+ * AND status !== "Submitted" (case must have been auto-assigned at minimum).
+ * NOTE: after a transfer is ACCEPTED by the destination, c.department changes
+ * to the destination dept — so the case leaves this supervisor's list naturally.
+ */
 export function getCases() {
   const supervisor = getLoggedInSupervisor();
   if (!supervisor || supervisor.role !== "supervisor") return [];
@@ -75,13 +80,7 @@ export function addNoteToCase(id, note) {
   }
 }
 
-// ── Activity log helpers ──────────────────────────────────────────────────────
-/**
- * Appends one entry to c.activity[] and saves to localStorage.
- * type: "submitted" | "assigned" | "accepted" | "rejected" | "status" |
- *       "transfer" | "note" | "resolved" | "closed" | "supervisor_closed" |
- *       "supervisor_rejected" | "reassigned"
- */
+// ── Activity log ──────────────────────────────────────────────────────────────
 export function appendActivity(id, entry) {
   const cases = getAllCasesRaw();
   const c = cases.find(x => x.id === id);
@@ -92,53 +91,62 @@ export function appendActivity(id, entry) {
   }
 }
 
-// ── Notification store (shared localStorage key "notifications") ───────────────
-/**
- * Push a notification to an officer (or supervisor) by their user id.
- * Officers read this on page load to populate the bell badge.
- */
+// ── Notification store ────────────────────────────────────────────────────────
 export function pushNotification(toUserId, message, caseId) {
   try {
     const raw  = localStorage.getItem("notifications") || "[]";
     const list = JSON.parse(raw);
     list.push({
-      id:      Date.now(),
-      to:      toUserId,
+      id:     Date.now(),
+      to:     toUserId,
       message,
-      caseId:  caseId || null,
-      time:    new Date().toISOString(),
-      read:    false
+      caseId: caseId || null,
+      time:   new Date().toISOString(),
+      read:   false
     });
     localStorage.setItem("notifications", JSON.stringify(list));
   } catch { /* silent */ }
 }
 
-// ── Transfer-request filtering ────────────────────────────────────────────────
+// ── Transfer filtering ────────────────────────────────────────────────────────
+
 /**
- * Cases where the OFFICER of this department requested an outgoing transfer.
- * These appear in supervisor's "Transfer Requests" page (not Accept Transfers).
- * Condition: transfer.requested=true, transfer.originDept === supervisor.department,
- * transfer.supervisorStatus is not yet set (pending supervisor decision).
+ * OUTGOING transfers — cases where an officer of THIS supervisor's department
+ * has requested a transfer OUT to another department.
+ *
+ * KEY FIX: The officer only writes:
+ *   { requested: true, toDept, reason, notes, status: "pending", requestedBy, requestedAt }
+ * The field "originDept" is NEVER set by the officer.
+ *
+ * So we match on c.department === supervisor.department (the case still belongs
+ * to this dept until the destination accepts), AND transfer.requested is true,
+ * AND the supervisor hasn't decided yet (supervisorStatus absent or "pending").
+ *
+ * Supervisor sees these in "Transfer Requests" to approve or reject.
  */
 export function getOutgoingTransferRequests() {
   const supervisor = getLoggedInSupervisor();
   if (!supervisor) return [];
   return getAllCasesRaw()
     .filter(c =>
-      c.department === supervisor.department &&
+      c.department === supervisor.department &&          // case belongs to THIS dept
       c.transfer?.requested === true &&
-      c.transfer?.originDept === supervisor.department &&
-      (!c.transfer.supervisorStatus || c.transfer.supervisorStatus === "pending")
+      c.transfer?.toDept &&                             // a destination was specified
+      c.transfer?.toDept !== supervisor.department &&   // must be a different dept
+      (!c.transfer.supervisorStatus ||
+        c.transfer.supervisorStatus === "pending")      // supervisor hasn't acted yet
     )
     .map(normaliseCitizen);
 }
 
 /**
- * Cases incoming to this supervisor's department FROM another department.
- * These appear in "Accept Transfers".
- * Condition: transfer.toDept === supervisor.department AND
- * supervisor approved it (supervisorStatus="approved") but
- * destination hasn't acted yet (destinationStatus is not set or pending).
+ * INCOMING transfers — cases routed TO this supervisor's department from another.
+ *
+ * Condition: transfer.toDept === supervisor.department (destination is here)
+ * AND the origin supervisor has approved (supervisorStatus === "approved")
+ * AND this destination supervisor hasn't acted yet (destinationStatus absent or "pending").
+ *
+ * Supervisor sees these in "Accept Transfers" to assign to one of their officers.
  */
 export function getIncomingTransferRequests() {
   const supervisor = getLoggedInSupervisor();
@@ -146,9 +154,10 @@ export function getIncomingTransferRequests() {
   return getAllCasesRaw()
     .filter(c =>
       c.transfer?.requested === true &&
-      c.transfer?.toDept === supervisor.department &&
-      c.transfer?.supervisorStatus === "approved" &&      // origin supervisor approved
-      (!c.transfer.destinationStatus || c.transfer.destinationStatus === "pending")
+      c.transfer?.toDept === supervisor.department &&   // this dept is the destination
+      c.transfer?.supervisorStatus === "approved" &&    // origin supervisor approved it
+      (!c.transfer.destinationStatus ||
+        c.transfer.destinationStatus === "pending")     // destination hasn't acted yet
     )
     .map(normaliseCitizen);
 }

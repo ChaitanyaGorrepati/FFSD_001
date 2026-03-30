@@ -1,12 +1,13 @@
 // js/supervisor/transfer-requests.js
-// Transfer Requests page — shows cases where an officer in THIS department
-// has requested a transfer to ANOTHER department.
-// Supervisor can approve (routes to destination Accept Transfers) or reject.
+// ─────────────────────────────────────────────────────────────────────────────
+// Transfer Requests page — shows outgoing transfer requests made by officers
+// of THIS supervisor's department. Supervisor approves → routes to destination
+// supervisor's Accept Transfers. Supervisor rejects → officer keeps the case.
+// ─────────────────────────────────────────────────────────────────────────────
 
 import {
-  getOutgoingTransferRequests, getCases,
-  updateCase, appendActivity, pushNotification,
-  resolveOfficerName, priorityBadge, statusBadge, formatDate,
+  getCases, updateCase, appendActivity, pushNotification,
+  resolveOfficerName, formatDate,
   getLoggedInSupervisor
 } from './supervisorData.js';
 import { populateSupervisorIdentity } from './sidebar-identity.js';
@@ -17,30 +18,30 @@ const supervisor = getLoggedInSupervisor();
 const tbody      = document.getElementById("transfers-tbody");
 const emptyState = document.getElementById("empty-state");
 
+// ── Get all outgoing transfers for this supervisor's dept ─────────────────────
+// KEY FIX: match on c.department === supervisor.department (officer never sets originDept)
+function getOutgoingTransfers() {
+  return getCases().filter(c =>
+    c.transfer?.requested === true &&
+    c.transfer?.toDept &&
+    c.transfer?.toDept !== supervisor?.department   // must be cross-dept transfer
+  );
+}
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 function updateStats() {
-  const all = getCases();
+  const all     = getOutgoingTransfers();
+  const pending  = all.filter(c => !c.transfer.supervisorStatus || c.transfer.supervisorStatus === "pending").length;
+  const approved = all.filter(c => c.transfer.supervisorStatus === "approved").length;
+  const rejected = all.filter(c => c.transfer.supervisorStatus === "rejected").length;
+
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-
-  const outgoing   = getOutgoingTransferRequests();
-  const pendingOut = outgoing.filter(c =>
-    !c.transfer.supervisorStatus || c.transfer.supervisorStatus === "pending"
-  ).length;
-  const approved = all.filter(c =>
-    c.department === supervisor?.department &&
-    c.transfer?.supervisorStatus === "approved"
-  ).length;
-  const rejected = all.filter(c =>
-    c.department === supervisor?.department &&
-    c.transfer?.supervisorStatus === "rejected"
-  ).length;
-
-  set("stat-pending",  pendingOut);
+  set("stat-pending",  pending);
   set("stat-accepted", approved);
   set("stat-rejected", rejected);
 }
 
-// ── Badge ─────────────────────────────────────────────────────────────────────
+// ── Status badge ──────────────────────────────────────────────────────────────
 function transferStatusBadge(status) {
   if (!status || status === "pending") return `<span class="badge badge-orange">Pending</span>`;
   if (status === "approved")           return `<span class="badge badge-green">Approved</span>`;
@@ -48,33 +49,31 @@ function transferStatusBadge(status) {
   return `<span class="badge badge-gray">${status}</span>`;
 }
 
-// ── Table ─────────────────────────────────────────────────────────────────────
+// ── Table render ──────────────────────────────────────────────────────────────
+// HTML has 8 columns: Case ID | Category | From Dept | Requested Dept | Zone | Date | Status | Action
 function renderTable() {
-  // Show ALL outgoing transfers (pending + decided) so supervisor can review history
-  const allWithTransfer = getCases().filter(c =>
-    c.transfer?.requested &&
-    c.transfer?.originDept === supervisor?.department
-  );
+  const transfers = getOutgoingTransfers();
 
-  if (emptyState) emptyState.style.display = allWithTransfer.length === 0 ? "block" : "none";
+  if (emptyState) emptyState.style.display = transfers.length === 0 ? "block" : "none";
   if (!tbody) return;
 
-  if (allWithTransfer.length === 0) return;
+  if (transfers.length === 0) {
+    tbody.innerHTML = "";
+    return;
+  }
 
-  tbody.innerHTML = allWithTransfer.map(c => {
-    const officerName = resolveOfficerName(c.assignedTo) || "—";
-    const supStatus   = c.transfer?.supervisorStatus || "pending";
-    const isPending   = !c.transfer.supervisorStatus || c.transfer.supervisorStatus === "pending";
+  tbody.innerHTML = transfers.map(c => {
+    const supStatus = c.transfer?.supervisorStatus || "pending";
+    const isPending = !c.transfer.supervisorStatus || c.transfer.supervisorStatus === "pending";
 
     return `
     <tr>
       <td><a class="case-id-link" href="case-details.html?id=${c.id}">${c.id}</a></td>
       <td>${c.category || "—"}</td>
-      <td>${officerName}</td>
-      <td>${c.department}</td>
+      <td>${c.department || "—"}</td>
       <td>${c.transfer?.toDept || "—"}</td>
-      <td>${c.zone}</td>
-      <td>${formatDate(c.createdAt)}</td>
+      <td>${c.zone || "—"}</td>
+      <td>${formatDate(c.transfer?.requestedAt || c.createdAt)}</td>
       <td>${transferStatusBadge(supStatus)}</td>
       <td>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -90,63 +89,63 @@ function renderTable() {
   }).join("");
 }
 
-// ── Approve transfer: routes case to destination Accept Transfers ──────────────
+// ── Approve: marks supervisorStatus=approved so destination sees it ───────────
 window.approveTransfer = function(id) {
-  const cases     = getCases();
-  const c         = cases.find(x => x.id === id);
+  // Read directly from raw storage so we don't miss the case if dept filter is strict
+  const allRaw = JSON.parse(localStorage.getItem("cases") || "[]");
+  const c = allRaw.find(x => x.id === id);
   if (!c) return;
 
-  const toDept    = c.transfer?.toDept;
-  const officerName = resolveOfficerName(c.assignedTo) || "Officer";
+  const toDept = c.transfer?.toDept;
 
-  // 1. Update transfer — mark supervisorStatus=approved so destination sees it
   updateCase(id, {
     transfer: {
       ...c.transfer,
-      supervisorStatus:   "approved",
-      destinationStatus:  "pending",   // destination supervisor hasn't decided yet
-      approvedAt:         new Date().toISOString(),
-      approvedBySup:      supervisor?.id
+      // Stamp originDept NOW so both getOutgoing and getIncoming can work reliably
+      originDept:        c.department,
+      supervisorStatus:  "approved",
+      destinationStatus: "pending",
+      approvedAt:        new Date().toISOString(),
+      approvedBySup:     supervisor?.id,
+      approvedBySupName: supervisor?.name
     }
-    // department stays the SAME until destination supervisor accepts
+    // NOTE: c.department stays the same until destination supervisor accepts
   });
 
-  // 2. Log activity
   appendActivity(id, {
     type:  "transfer",
-    label: `Transfer to ${toDept} approved by Supervisor ${supervisor?.name}. Awaiting ${toDept} supervisor.`
+    label: `Transfer to ${toDept} approved by Supervisor ${supervisor?.name}. Awaiting ${toDept} supervisor acceptance.`
   });
 
-  // 3. Notify the officer who requested it
+  // Notify the officer who requested it
   if (c.assignedTo) {
     pushNotification(
       c.assignedTo,
-      `Your transfer request for case ${id} to ${toDept} has been approved by your supervisor. Awaiting ${toDept} supervisor acceptance.`,
+      `Your transfer request for case ${id} to ${toDept} has been approved by Supervisor ${supervisor?.name}. Awaiting ${toDept} department acceptance.`,
       id
     );
   }
 
   renderTable();
   updateStats();
-  toast(`Transfer to ${toDept} approved. Routing to ${toDept} supervisor's Accept Transfers.`, "green");
+  toast(`Transfer to ${toDept} approved. Now visible in ${toDept} supervisor's Accept Transfers.`, "green");
 };
 
-// ── Reject transfer ───────────────────────────────────────────────────────────
+// ── Reject: supervisor declines, officer keeps the case ───────────────────────
 window.rejectTransfer = function(id) {
-  const cases = getCases();
-  const c = cases.find(x => x.id === id);
+  const allRaw = JSON.parse(localStorage.getItem("cases") || "[]");
+  const c = allRaw.find(x => x.id === id);
   if (!c) return;
-
-  const officerName = resolveOfficerName(c.assignedTo) || "Officer";
 
   updateCase(id, {
     transfer: {
       ...c.transfer,
+      originDept:       c.department,
       supervisorStatus: "rejected",
       rejectedAt:       new Date().toISOString(),
       rejectedBySup:    supervisor?.id
     },
-    status: "In Progress"  // revert to active — officer keeps working it
+    status: "In Progress"  // revert — officer continues working it
   });
 
   appendActivity(id, {
@@ -154,18 +153,17 @@ window.rejectTransfer = function(id) {
     label: `Transfer request rejected by Supervisor ${supervisor?.name}. Case remains with ${c.department}.`
   });
 
-  // Notify officer
   if (c.assignedTo) {
     pushNotification(
       c.assignedTo,
-      `Your transfer request for case ${id} was rejected by your supervisor. Please continue working on the case.`,
+      `Your transfer request for case ${id} was rejected by Supervisor ${supervisor?.name}. Please continue working on the case.`,
       id
     );
   }
 
   renderTable();
   updateStats();
-  toast(`Transfer request for ${id} rejected.`, "red");
+  toast(`Transfer request for ${id} rejected. Officer notified.`, "red");
 };
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
