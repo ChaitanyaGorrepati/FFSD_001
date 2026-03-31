@@ -1,11 +1,10 @@
-/**
- * main.js — Place at: js/main.js
- * Seeds localStorage with mock cases AND users on first load.
- */
+// js/main.js
+import { initUsers } from "../models/userModel.js";
+import { initDepartments } from "../models/departmentModel.js";
+import { initCases } from "../models/caseModel.js";
 
-import { initCases, initUsers } from "./index.js";
-
-initCases();
 initUsers();
+initDepartments();
+initCases();
 
 console.log("[CivicTrack] App initialised.");

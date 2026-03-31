@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CivicTrack – Super User Dashboard</title>
   <link rel="stylesheet" href="../../css/global.css" />
-  <link rel="stylesheet" href="../../css/superuser-dashboard.css" />
+  <link rel="stylesheet" href="../../css/superuser/superuser-dashboard.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -51,10 +51,14 @@
       </div>
 
       <div class="sidebar-footer">
+        <a href="#" id="logout-btn" onclick="sessionStorage.clear();window.location.href='../role-selection.html';return false;" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text-muted,#888);text-decoration:none;font-size:0.85rem;margin-bottom:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(220,38,38,0.08)';this.style.color='#dc2626';" onmouseout="this.style.background='';this.style.color='var(--text-muted,#888)';">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </a>
         <div class="sidebar-user">
-          <div class="avatar">SU</div>
+          <div class="avatar" id="su-avatar">SU</div>
           <div class="sidebar-user-info">
-            <div class="name">Super User</div>
+            <div class="name" id="su-name">Super User</div>
             <div class="role">System Admin</div>
           </div>
         </div>
@@ -70,8 +74,8 @@
         </div>
         <div class="topbar-right">
           <div class="topbar-user">
-            <div class="avatar sm">SU</div>
-            <span class="name">Super User</span>
+            <div class="avatar sm" id="su-topbar-avatar">SU</div>
+            <span class="name" id="su-topbar-name">Super User</span>
           </div>
         </div>
       </header>
@@ -131,6 +135,7 @@
         <div class="card mt-6">
           <div class="card-header">
             <div class="card-title">Recent Cases</div>
+            <a href="superuser-cases.html" class="btn btn-outline btn-sm">View All →</a>
           </div>
           <div class="table-wrapper">
             <table class="table">
@@ -155,6 +160,24 @@
     </div>
   </div>
 
-  <script type="module" src="../../js/superuser-dashboard.js"></script>
+
+  <script>
+    (function() {
+      const u = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+      if (!u) return;
+      const initials = u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      ["su-avatar", "su-topbar-avatar"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = initials;
+      });
+      ["su-name", "su-topbar-name"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = u.name;
+      });
+    })();
+  </script>
+
+  <script type="module" src="../../js/main.js"></script>
+  <script type="module" src="../../js/superuser/superuser-dashboard.js"></script>
 </body>
 </html>

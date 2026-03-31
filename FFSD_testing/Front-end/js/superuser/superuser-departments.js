@@ -1,6 +1,16 @@
-// js/superuser-departments.js
-import { initDepartments } from "../models/departmentModel.js";
-import { fetchDepartments, createDepartment, editDepartment, removeDepartment } from "../routes/departmentRoutes.js";
+// js/superuser/superuser-departments.js
+import { initDepartments } from "../../models/departmentModel.js";
+import { fetchDepartments, createDepartment, editDepartment, removeDepartment } from "../../routes/departmentRoutes.js";
+
+// ── Auth Guard (runs after imports) ──────────────────────────────────────────
+(function() {
+  const _su = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+  if (!_su || _su.role !== "superuser") {
+    window.location.href = "../role-selection.html";
+  }
+})();
+
+
 
 // ── State ──────────────────────────────────────────────
 let pendingDeleteName = null;
@@ -36,13 +46,15 @@ function renderCategoryTags() {
     </div>
   `).join("");
 
-  catTags.querySelectorAll(".rm").forEach(btn => {
-    btn.addEventListener("click", () => {
-      currentCategories.splice(parseInt(btn.dataset.index), 1);
-      renderCategoryTags();
-    });
-  });
 }
+
+catTags.addEventListener("click", e => {
+  const rmBtn = e.target.closest(".rm");
+  if (rmBtn) {
+    currentCategories.splice(parseInt(rmBtn.dataset.index), 1);
+    renderCategoryTags();
+  }
+});
 
 function addCategory() {
   const val = catInput.value.trim();
@@ -87,14 +99,18 @@ function renderTable() {
       </tr>
     `;
   }).join("");
-
-  tbody.querySelectorAll(".action-btn.edit").forEach(btn => {
-    btn.addEventListener("click", () => openEditModal(btn.dataset.name));
-  });
-  tbody.querySelectorAll(".action-btn.delete").forEach(btn => {
-    btn.addEventListener("click", () => openConfirmModal(btn.dataset.name));
-  });
 }
+
+tbody.addEventListener("click", e => {
+  const editBtn = e.target.closest(".action-btn.edit");
+  const deleteBtn = e.target.closest(".action-btn.delete");
+  
+  if (editBtn) {
+    openEditModal(editBtn.dataset.name);
+  } else if (deleteBtn) {
+    openConfirmModal(deleteBtn.dataset.name);
+  }
+});
 
 // ── Open Add Modal ─────────────────────────────────────
 function openAddModal() {
@@ -190,7 +206,6 @@ deptModal.addEventListener("click", e => { if (e.target === deptModal) closeDept
 confirmModal.addEventListener("click", e => { if (e.target === confirmModal) closeConfirmModal(); });
 
 // ── Init ───────────────────────────────────────────────
-window.addEventListener("DOMContentLoaded", () => {
-  initDepartments();
-  renderTable();
-});
+// Init directly (scripts at bottom of body)
+initDepartments();
+renderTable();

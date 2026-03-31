@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CivicTrack – Case Management</title>
   <link rel="stylesheet" href="../../css/global.css" />
-  <link rel="stylesheet" href="../../css/superuser-cases.css" />
+  <link rel="stylesheet" href="../../css/superuser/superuser-cases.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -51,10 +51,14 @@
       </div>
 
       <div class="sidebar-footer">
+        <a href="#" id="logout-btn" onclick="sessionStorage.clear();window.location.href='../role-selection.html';return false;" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text-muted,#888);text-decoration:none;font-size:0.85rem;margin-bottom:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(220,38,38,0.08)';this.style.color='#dc2626';" onmouseout="this.style.background='';this.style.color='var(--text-muted,#888)';">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </a>
         <div class="sidebar-user">
-          <div class="avatar">SU</div>
+          <div class="avatar" id="su-avatar">SU</div>
           <div class="sidebar-user-info">
-            <div class="name">Super User</div>
+            <div class="name" id="su-name">Super User</div>
             <div class="role">System Admin</div>
           </div>
         </div>
@@ -72,8 +76,8 @@
         </div>
         <div class="topbar-right">
           <div class="topbar-user">
-            <div class="avatar sm">SU</div>
-            <span class="name">Super User</span>
+            <div class="avatar sm" id="su-topbar-avatar">SU</div>
+            <span class="name" id="su-topbar-name">Super User</span>
           </div>
         </div>
       </header>
@@ -92,19 +96,19 @@
             <div class="stat-value" id="stat-total">0</div>
             <div class="stat-label">Total Cases</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="open">
+          <button class="stat-card stat-filter-btn" data-status="Assigned">
             <div class="stat-value stat-open" id="stat-open">0</div>
-            <div class="stat-label">Open</div>
+            <div class="stat-label">Assigned / Pending</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="in-progress">
+          <button class="stat-card stat-filter-btn" data-status="In Progress">
             <div class="stat-value stat-in-progress" id="stat-in-progress">0</div>
             <div class="stat-label">In Progress</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="resolved">
+          <button class="stat-card stat-filter-btn" data-status="Resolved">
             <div class="stat-value stat-resolved" id="stat-resolved">0</div>
             <div class="stat-label">Resolved</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="closed">
+          <button class="stat-card stat-filter-btn" data-status="Closed">
             <div class="stat-value stat-closed" id="stat-closed">0</div>
             <div class="stat-label">Closed</div>
           </button>
@@ -113,10 +117,10 @@
         <!-- Filter tabs -->
         <div class="filter-tabs mb-4" id="status-filter">
           <div class="filter-tab active" data-status="all">All</div>
-          <div class="filter-tab" data-status="open">Open</div>
-          <div class="filter-tab" data-status="in-progress">In Progress</div>
-          <div class="filter-tab" data-status="resolved">Resolved</div>
-          <div class="filter-tab" data-status="closed">Closed</div>
+          <div class="filter-tab" data-status="Assigned">Assigned</div>
+          <div class="filter-tab" data-status="In Progress">In Progress</div>
+          <div class="filter-tab" data-status="Resolved">Resolved</div>
+          <div class="filter-tab" data-status="Closed">Closed</div>
         </div>
 
         <!-- Search & Filter Controls -->
@@ -192,6 +196,11 @@
         </div>
 
         <div class="form-group mt-4">
+          <label class="form-label">Assigned To</label>
+          <input type="text" class="input" id="view-assigned-to" disabled />
+        </div>
+
+        <div class="form-group mt-4">
           <label class="form-label">Status</label>
           <input type="text" class="input" id="view-status" disabled />
         </div>
@@ -211,10 +220,11 @@
         <div class="form-group">
           <label class="form-label">Update Status</label>
           <select class="select" id="update-status">
-            <option value="open">Open</option>
-            <option value="in-progress">In Progress</option>
-            <option value="resolved">Resolved</option>
-            <option value="closed">Closed</option>
+            <option value="Assigned">Assigned</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+            <option value="Rejected">Rejected</option>
           </select>
         </div>
 
@@ -239,6 +249,24 @@
     </div>
   </div>
 
-  <script type="module" src="../../js/superuser-cases.js"></script>
+
+  <script>
+    (function() {
+      const u = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+      if (!u) return;
+      const initials = u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      ["su-avatar", "su-topbar-avatar"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = initials;
+      });
+      ["su-name", "su-topbar-name"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = u.name;
+      });
+    })();
+  </script>
+
+  <script type="module" src="../../js/main.js"></script>
+  <script type="module" src="../../js/superuser/superuser-cases.js"></script>
 </body>
 </html>

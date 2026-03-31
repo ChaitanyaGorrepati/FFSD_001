@@ -1,7 +1,17 @@
-// js/superuser-users.js
-import { initUsers } from "../models/userModel.js";
-import { initDepartments, getDepartments } from "../models/departmentModel.js";
-import { fetchUsers, createUser, editUser, removeUser } from "../routes/userRoutes.js";
+// js/superuser/superuser-users.js
+import { initUsers } from "../../models/userModel.js";
+import { initDepartments, getDepartments } from "../../models/departmentModel.js";
+import { fetchUsers, createUser, editUser, removeUser } from "../../routes/userRoutes.js";
+
+// ── Auth Guard (runs after imports) ──────────────────────────────────────────
+(function() {
+  const _su = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+  if (!_su || _su.role !== "superuser") {
+    window.location.href = "../role-selection.html";
+  }
+})();
+
+
 
 // ── State ──────────────────────────────────────────────
 let currentFilter = "all";
@@ -14,6 +24,7 @@ const confirmModal = document.getElementById("confirm-modal");
 const modalTitle   = document.getElementById("modal-title");
 const editIdInput  = document.getElementById("edit-user-id");
 const nameInput    = document.getElementById("user-name");
+const passwordInput= document.getElementById("user-password");
 const roleSelect   = document.getElementById("user-role");
 const deptSelect   = document.getElementById("user-dept");
 const zoneSelect   = document.getElementById("user-zone");
@@ -43,7 +54,7 @@ function showError(id, msg) {
 }
 
 function clearErrors() {
-  ["err-name", "err-role", "err-dept", "err-global"].forEach(id => showError(id, ""));
+  ["err-name", "err-password", "err-role", "err-dept", "err-global"].forEach(id => showError(id, ""));
 }
 
 function populateDeptSelect() {
@@ -61,8 +72,10 @@ function toggleOptionalFields() {
   const role = roleSelect.value;
   const needsDept = role === "officer" || role === "supervisor";
   const needsZone = role === "officer";
+  const needsPassword = role === "officer" || role === "supervisor";
   deptGroup.style.display = needsDept ? "" : "none";
   zoneGroup.style.display = needsZone ? "" : "none";
+  document.getElementById("password-group").style.display = needsPassword ? "" : "none";
 }
 
 // ── Render Table ───────────────────────────────────────
@@ -101,14 +114,19 @@ function renderTable() {
     </tr>
   `).join("");
 
-  // Attach row-level listeners
-  tbody.querySelectorAll(".action-btn.edit").forEach(btn => {
-    btn.addEventListener("click", () => openEditModal(btn.dataset.id));
-  });
-  tbody.querySelectorAll(".action-btn.delete").forEach(btn => {
-    btn.addEventListener("click", () => openConfirmModal(btn.dataset.id, btn.dataset.name));
-  });
 }
+
+// Event Delegation for Table Buttons
+tbody.addEventListener("click", e => {
+  const editBtn = e.target.closest(".action-btn.edit");
+  const deleteBtn = e.target.closest(".action-btn.delete");
+  
+  if (editBtn) {
+    openEditModal(editBtn.dataset.id);
+  } else if (deleteBtn) {
+    openConfirmModal(deleteBtn.dataset.id, deleteBtn.dataset.name);
+  }
+});
 
 // ── Open Add Modal ─────────────────────────────────────
 function openAddModal() {
@@ -116,6 +134,7 @@ function openAddModal() {
   modalTitle.textContent = "Add User";
   editIdInput.value = "";
   nameInput.value = "";
+  passwordInput.value = "";
   roleSelect.value = "";
   deptSelect.value = "";
   zoneSelect.value = "";
@@ -134,6 +153,7 @@ function openEditModal(id) {
   modalTitle.textContent = "Edit User";
   editIdInput.value = user.id;
   nameInput.value = user.name;
+  passwordInput.value = user.password || "";
   roleSelect.value = user.role;
   toggleOptionalFields();
   deptSelect.value = user.department || "";
@@ -152,19 +172,21 @@ function handleSave() {
   let valid = true;
 
   const name = nameInput.value.trim();
+  const password = passwordInput.value.trim();
   const role = roleSelect.value;
   const dept = deptSelect.value;
   const zone = zoneSelect.value;
+  const id = editIdInput.value;
 
   if (!name) { showError("err-name", "Name is required."); valid = false; }
+  if (!id && (role === "officer" || role === "supervisor") && !password) { showError("err-password", "Password is required for new users."); valid = false; }
   if (!role) { showError("err-role", "Please select a role."); valid = false; }
   if ((role === "officer" || role === "supervisor") && !dept) {
     showError("err-dept", "Department is required for this role."); valid = false;
   }
   if (!valid) return;
 
-  const data = { name, role, department: dept || null, zone: zone || null };
-  const id = editIdInput.value;
+  const data = { name, password, role, department: dept || null, zone: zone || null };
 
   let result;
   if (id) {
@@ -205,7 +227,7 @@ function handleDelete() {
 document.getElementById("role-filter").addEventListener("click", e => {
   const tab = e.target.closest(".filter-tab");
   if (!tab) return;
-  document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll("#role-filter .filter-tab").forEach(t => t.classList.remove("active")); // ← fixed
   tab.classList.add("active");
   currentFilter = tab.dataset.role;
   renderTable();
@@ -227,9 +249,8 @@ userModal.addEventListener("click", e => { if (e.target === userModal) closeUser
 confirmModal.addEventListener("click", e => { if (e.target === confirmModal) closeConfirmModal(); });
 
 // ── Init ───────────────────────────────────────────────
-window.addEventListener("DOMContentLoaded", () => {
-  initUsers();
-  initDepartments();
-  populateDeptSelect();
-  renderTable();
-});
+// Init (scripts are at bottom of body so DOM is ready)
+initUsers();
+initDepartments();
+populateDeptSelect();
+renderTable();
