@@ -7,6 +7,8 @@ if (!currentUser || currentUser.role !== "citizen") {
   window.location.href = "../../login.html";
 }
 
+
+
 // ── 2. Populate sidebar / topbar identity ────────────────────────────────────
 const initials = currentUser.name
   .split(" ")
@@ -23,10 +25,11 @@ document.getElementById("topbar-name").textContent  = currentUser.name;
 });
 
 // ── 3. Logout ─────────────────────────────────────────────────────────────────
-document.getElementById("logout-btn")?.addEventListener("click", e => {
+document.getElementById("logout-btn").addEventListener("click", (e) => {
   e.preventDefault();
   sessionStorage.removeItem("ct_user");
-  window.location.href = "../../login.html";
+  sessionStorage.removeItem("ct_selected_role");
+  window.location.href = "../login.html";
 });
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
