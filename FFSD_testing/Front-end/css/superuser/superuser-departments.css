@@ -141,6 +141,7 @@
   margin: 2px 2px;
 }
 
+/* ── Action buttons ── */
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -152,6 +153,16 @@
   cursor: pointer;
   border: none;
   transition: background .15s;
+}
+
+.action-btn.view {
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.action-btn.view:hover {
+  background: #dbeafe;
 }
 
 .action-btn.edit {
@@ -167,3 +178,9 @@
 }
 
 .action-btn.delete:hover { background: #fee2e2; }
+
+.flex { display: flex; }
+.gap-2 { gap: 0.5rem; }
+.font-semibold { font-weight: 600; }
+.text-muted { color: #9ca3af; }
+.text-xs { font-size: 0.75rem; }

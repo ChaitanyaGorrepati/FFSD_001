@@ -3,7 +3,7 @@ import { initUsers } from "../../models/userModel.js";
 import { initDepartments, getDepartments } from "../../models/departmentModel.js";
 import { fetchUsers, createUser, editUser, removeUser } from "../../routes/userRoutes.js";
 
-// ── Auth Guard (runs after imports) ──────────────────────────────────────────
+// ── Auth Guard ────────────────────────────────────────────────────────────────
 (function() {
   const _su = JSON.parse(sessionStorage.getItem("ct_user") || "null");
   if (!_su || _su.role !== "superuser") {
@@ -11,27 +11,25 @@ import { fetchUsers, createUser, editUser, removeUser } from "../../routes/userR
   }
 })();
 
-
-
-// ── State ──────────────────────────────────────────────
+// ── State ─────────────────────────────────────────────────────────────────────
 let currentFilter = "all";
 let pendingDeleteId = null;
 
-// ── DOM refs ───────────────────────────────────────────
-const tbody        = document.getElementById("users-table-body");
-const userModal    = document.getElementById("user-modal");
-const confirmModal = document.getElementById("confirm-modal");
-const modalTitle   = document.getElementById("modal-title");
-const editIdInput  = document.getElementById("edit-user-id");
-const nameInput    = document.getElementById("user-name");
-const passwordInput= document.getElementById("user-password");
-const roleSelect   = document.getElementById("user-role");
-const deptSelect   = document.getElementById("user-dept");
-const zoneSelect   = document.getElementById("user-zone");
-const deptGroup    = document.getElementById("dept-group");
-const zoneGroup    = document.getElementById("zone-group");
+// ── DOM refs ──────────────────────────────────────────────────────────────────
+const tbody         = document.getElementById("users-table-body");
+const userModal     = document.getElementById("user-modal");
+const confirmModal  = document.getElementById("confirm-modal");
+const modalTitle    = document.getElementById("modal-title");
+const editIdInput   = document.getElementById("edit-user-id");
+const nameInput     = document.getElementById("user-name");
+const passwordInput = document.getElementById("user-password");
+const roleSelect    = document.getElementById("user-role");
+const deptSelect    = document.getElementById("user-dept");
+const zoneSelect    = document.getElementById("user-zone");
+const deptGroup     = document.getElementById("dept-group");
+const zoneGroup     = document.getElementById("zone-group");
 
-// ── Helpers ────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 function roleBadge(role) {
   const map = {
     officer:    "badge-officer",
@@ -78,7 +76,16 @@ function toggleOptionalFields() {
   document.getElementById("password-group").style.display = needsPassword ? "" : "none";
 }
 
-// ── Render Table ───────────────────────────────────────
+// ── Update Stat Cards ─────────────────────────────────────────────────────────
+function updateStats() {
+  const users = fetchUsers();
+  document.getElementById("stat-total").textContent       = users.length;
+  document.getElementById("stat-supervisors").textContent = users.filter(u => u.role === "supervisor").length;
+  document.getElementById("stat-officers").textContent    = users.filter(u => u.role === "officer").length;
+  document.getElementById("stat-citizens").textContent    = users.filter(u => u.role === "citizen").length;
+}
+
+// ── Render Table ──────────────────────────────────────────────────────────────
 function renderTable() {
   const users = fetchUsers();
   const filtered = currentFilter === "all" ? users : users.filter(u => u.role === currentFilter);
@@ -101,10 +108,11 @@ function renderTable() {
       <td>${u.zone || '<span class="text-muted">—</span>'}</td>
       <td>
         <div class="flex gap-2">
+          ${u.role !== "citizen" ? `
           <button class="action-btn edit" data-id="${u.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             Edit
-          </button>
+          </button>` : ""}
           <button class="action-btn delete" data-id="${u.id}" data-name="${u.name}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
             Delete
@@ -113,14 +121,13 @@ function renderTable() {
       </td>
     </tr>
   `).join("");
-
 }
 
-// Event Delegation for Table Buttons
+// ── Event Delegation for Table Buttons ────────────────────────────────────────
 tbody.addEventListener("click", e => {
-  const editBtn = e.target.closest(".action-btn.edit");
+  const editBtn   = e.target.closest(".action-btn.edit");
   const deleteBtn = e.target.closest(".action-btn.delete");
-  
+
   if (editBtn) {
     openEditModal(editBtn.dataset.id);
   } else if (deleteBtn) {
@@ -128,7 +135,19 @@ tbody.addEventListener("click", e => {
   }
 });
 
-// ── Open Add Modal ─────────────────────────────────────
+// ── Stat Card Filters ─────────────────────────────────────────────────────────
+document.querySelectorAll(".stat-filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const role = btn.dataset.role;
+    document.querySelectorAll("#role-filter .filter-tab").forEach(t => t.classList.remove("active"));
+    const matchTab = document.querySelector(`#role-filter .filter-tab[data-role="${role}"]`);
+    if (matchTab) matchTab.classList.add("active");
+    currentFilter = role;
+    renderTable();
+  });
+});
+
+// ── Open Add Modal ────────────────────────────────────────────────────────────
 function openAddModal() {
   clearErrors();
   modalTitle.textContent = "Add User";
@@ -143,7 +162,7 @@ function openAddModal() {
   nameInput.focus();
 }
 
-// ── Open Edit Modal ────────────────────────────────────
+// ── Open Edit Modal ───────────────────────────────────────────────────────────
 function openEditModal(id) {
   const users = fetchUsers();
   const user = users.find(u => u.id === id);
@@ -166,17 +185,17 @@ function closeUserModal() {
   userModal.classList.add("hidden");
 }
 
-// ── Save Handler ───────────────────────────────────────
+// ── Save Handler ──────────────────────────────────────────────────────────────
 function handleSave() {
   clearErrors();
   let valid = true;
 
-  const name = nameInput.value.trim();
+  const name     = nameInput.value.trim();
   const password = passwordInput.value.trim();
-  const role = roleSelect.value;
-  const dept = deptSelect.value;
-  const zone = zoneSelect.value;
-  const id = editIdInput.value;
+  const role     = roleSelect.value;
+  const dept     = deptSelect.value;
+  const zone     = zoneSelect.value;
+  const id       = editIdInput.value;
 
   if (!name) { showError("err-name", "Name is required."); valid = false; }
   if (!id && (role === "officer" || role === "supervisor") && !password) { showError("err-password", "Password is required for new users."); valid = false; }
@@ -201,10 +220,11 @@ function handleSave() {
   }
 
   closeUserModal();
+  updateStats();
   renderTable();
 }
 
-// ── Confirm Delete ─────────────────────────────────────
+// ── Confirm Delete ────────────────────────────────────────────────────────────
 function openConfirmModal(id, name) {
   pendingDeleteId = id;
   document.getElementById("confirm-user-name").textContent = name;
@@ -220,20 +240,21 @@ function handleDelete() {
   if (!pendingDeleteId) return;
   removeUser(pendingDeleteId);
   closeConfirmModal();
+  updateStats();
   renderTable();
 }
 
-// ── Role filter tabs ───────────────────────────────────
+// ── Role filter tabs ──────────────────────────────────────────────────────────
 document.getElementById("role-filter").addEventListener("click", e => {
   const tab = e.target.closest(".filter-tab");
   if (!tab) return;
-  document.querySelectorAll("#role-filter .filter-tab").forEach(t => t.classList.remove("active")); // ← fixed
+  document.querySelectorAll("#role-filter .filter-tab").forEach(t => t.classList.remove("active"));
   tab.classList.add("active");
   currentFilter = tab.dataset.role;
   renderTable();
 });
 
-// ── Button bindings ────────────────────────────────────
+// ── Button bindings ───────────────────────────────────────────────────────────
 document.getElementById("btn-add-user").addEventListener("click", openAddModal);
 document.getElementById("modal-close").addEventListener("click", closeUserModal);
 document.getElementById("btn-cancel").addEventListener("click", closeUserModal);
@@ -248,9 +269,9 @@ roleSelect.addEventListener("change", toggleOptionalFields);
 userModal.addEventListener("click", e => { if (e.target === userModal) closeUserModal(); });
 confirmModal.addEventListener("click", e => { if (e.target === confirmModal) closeConfirmModal(); });
 
-// ── Init ───────────────────────────────────────────────
-// Init (scripts are at bottom of body so DOM is ready)
+// ── Init ──────────────────────────────────────────────────────────────────────
 initUsers();
 initDepartments();
 populateDeptSelect();
+updateStats();
 renderTable();

@@ -94,6 +94,26 @@
           </button>
         </div>
 
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <button class="stat-card stat-filter-btn" data-role="all">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Users</div>
+          </button>
+          <button class="stat-card stat-filter-btn" data-role="supervisor">
+            <div class="stat-value stat-supervisor" id="stat-supervisors">0</div>
+            <div class="stat-label">Supervisors</div>
+          </button>
+          <button class="stat-card stat-filter-btn" data-role="officer">
+            <div class="stat-value stat-officer" id="stat-officers">0</div>
+            <div class="stat-label">Officers</div>
+          </button>
+          <button class="stat-card stat-filter-btn" data-role="citizen">
+            <div class="stat-value stat-citizen" id="stat-citizens">0</div>
+            <div class="stat-label">Citizens</div>
+          </button>
+        </div>
+
         <!-- Filter tabs -->
         <div class="filter-tabs mb-4" id="role-filter">
           <div class="filter-tab active" data-role="all">All</div>
@@ -155,7 +175,6 @@
             <option value="">— Select Role —</option>
             <option value="officer">Officer</option>
             <option value="supervisor">Supervisor</option>
-    
           </select>
           <span class="error-text hidden" id="err-role"></span>
         </div>
@@ -207,7 +226,6 @@
       </div>
     </div>
   </div>
-
 
   <script>
     (function() {
