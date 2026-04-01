@@ -18,20 +18,35 @@ document.getElementById("logout-btn").addEventListener("click", () => {
   window.location.href = "../index.html";
 });
 
-// ── Closure badge ─────────────────────────────────────────────────────────────
-function updateClosureBadge() {
-  const count = getClosureCases().length;
-  const el = document.getElementById("sb-closure-count");
-  if (el) el.textContent = count;
+// ── Normalize status string ───────────────────────────────────────────────────
+// Always returns exactly "pending" | "approved" | "rejected"
+// This is the single source of truth used by BOTH the stats AND the filter.
+function normalizeStatus(raw) {
+  const s = (raw || "").toString().trim().toLowerCase();
+  if (s === "approved") return "approved";
+  if (s === "rejected") return "rejected";
+  return "pending"; // undefined / null / "pending" / anything else → pending
 }
 
-// ── Get all cases that have a closure request from this officer ───────────────
+// ── Get ALL cases that have a closureRequest from this officer ────────────────
+// Intentionally does NOT check requested:true so that cases whose status
+// was later changed to "approved" or "rejected" still appear in the list.
 function getClosureCases() {
   return getAllCases().filter(c =>
     c.assignedTo === user.id &&
     c.closureRequest &&
-    c.closureRequest.requested
+    typeof c.closureRequest === "object" &&
+    Object.keys(c.closureRequest).length > 0
   );
+}
+
+// ── Closure badge (only pending count shown) ──────────────────────────────────
+function updateClosureBadge() {
+  const pending = getClosureCases().filter(
+    c => normalizeStatus(c.closureRequest.status) === "pending"
+  ).length;
+  const el = document.getElementById("sb-closure-count");
+  if (el) el.textContent = pending;
 }
 
 // ── Active filter ─────────────────────────────────────────────────────────────
@@ -41,59 +56,65 @@ document.querySelectorAll(".filter-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
-    activeFilter = tab.dataset.filter;
+    activeFilter = tab.dataset.filter; // "all" | "pending" | "approved" | "rejected"
     render();
   });
 });
 
-// ── Status badge for closure ──────────────────────────────────────────────────
-function closureStatusBadge(status) {
+// ── Status badge HTML ─────────────────────────────────────────────────────────
+function closureStatusBadge(rawStatus) {
+  const s = normalizeStatus(rawStatus);
   const map = {
-    pending:  { cls: "badge-pending",  label: "⏳ Pending" },
+    pending:  { cls: "badge-pending",  label: "⏳ Pending"  },
     approved: { cls: "badge-resolved", label: "✅ Approved" },
     rejected: { cls: "badge-high",     label: "❌ Rejected" },
   };
-  const s = (status || "pending").toLowerCase();
-  const entry = map[s] || map.pending;
-  return `<span class="badge ${entry.cls}">${entry.label}</span>`;
+  const { cls, label } = map[s];
+  return `<span class="badge ${cls}">${label}</span>`;
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function render() {
-  let cases = getClosureCases();
+  // Always pull a fresh snapshot from localStorage
+  const allClosure = getClosureCases();
 
-  // Stats
-  document.getElementById("stat-pending").textContent  =
-    cases.filter(c => (c.closureRequest.status || "pending") === "pending").length;
-  document.getElementById("stat-approved").textContent =
-    cases.filter(c => c.closureRequest.status === "approved").length;
-  document.getElementById("stat-rejected").textContent =
-    cases.filter(c => c.closureRequest.status === "rejected").length;
+  // ── Stats: always from the full unfiltered list ──
+  const pendingCount  = allClosure.filter(c => normalizeStatus(c.closureRequest.status) === "pending").length;
+  const approvedCount = allClosure.filter(c => normalizeStatus(c.closureRequest.status) === "approved").length;
+  const rejectedCount = allClosure.filter(c => normalizeStatus(c.closureRequest.status) === "rejected").length;
 
-  // Filter
+  document.getElementById("stat-pending").textContent  = pendingCount;
+  document.getElementById("stat-approved").textContent = approvedCount;
+  document.getElementById("stat-rejected").textContent = rejectedCount;
+
+  // ── Filter: apply active tab ──
+  let filtered = allClosure;
   if (activeFilter !== "all") {
-    cases = cases.filter(c =>
-      (c.closureRequest.status || "pending") === activeFilter
+    filtered = allClosure.filter(
+      c => normalizeStatus(c.closureRequest.status) === activeFilter
     );
   }
 
-  // Sort newest first
-  cases.sort((a, b) =>
-    new Date(b.closureRequest.requestedAt) - new Date(a.closureRequest.requestedAt)
+  // ── Sort: newest request first ──
+  filtered.sort((a, b) =>
+    new Date(b.closureRequest.requestedAt || 0) -
+    new Date(a.closureRequest.requestedAt || 0)
   );
 
   const tbody = document.getElementById("closure-list-body");
 
-  if (!cases.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">No closure requests found.</td></tr>`;
+  if (!filtered.length) {
+    const label = activeFilter === "all" ? "No closure requests yet." : `No ${activeFilter} closure requests.`;
+    tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${label}</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = cases.map(c => {
+  tbody.innerHTML = filtered.map(c => {
     const cr = c.closureRequest;
-    const summaryShort = cr.summary && cr.summary.length > 60
-      ? cr.summary.slice(0, 60) + "…"
-      : (cr.summary || "—");
+    const summaryShort =
+      cr.summary && cr.summary.length > 60
+        ? cr.summary.slice(0, 60) + "…"
+        : (cr.summary || "—");
 
     return `
       <tr>
@@ -130,7 +151,7 @@ function render() {
 
 render();
 
-// ── Event delegation ──────────────────────────────────────────────────────────
+// ── Event delegation on table ─────────────────────────────────────────────────
 document.getElementById("closure-list-body").addEventListener("click", e => {
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
@@ -141,14 +162,12 @@ document.getElementById("closure-list-body").addEventListener("click", e => {
 
 // ── Detail Modal ──────────────────────────────────────────────────────────────
 function openDetailModal(id) {
-  const cases = getAllCases();
-  const c = cases.find(x => x.id === id);
+  const c = getAllCases().find(x => x.id === id);
   if (!c || !c.closureRequest) return;
 
   const cr = c.closureRequest;
 
   document.getElementById("dm-body").innerHTML = `
-    <!-- Case strip -->
     <div style="background:var(--border-light);border-radius:var(--radius);
                 padding:14px 16px;margin-bottom:20px;">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -163,7 +182,6 @@ function openDetailModal(id) {
       </div>
     </div>
 
-    <!-- Request info -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
       <div>
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;
@@ -199,21 +217,20 @@ function openDetailModal(id) {
       </div>
     </div>
 
-    <!-- Resolution summary -->
     <div style="margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;
                   letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px;">
         Resolution Summary
       </div>
       <div style="background:var(--border-light);border-radius:var(--radius);
-                  padding:12px 14px;font-size:13.5px;line-height:1.7;color:var(--text-primary);">
+                  padding:12px 14px;font-size:13.5px;line-height:1.7;
+                  color:var(--text-primary);">
         ${cr.summary || "—"}
       </div>
     </div>
 
-    <!-- Extra notes -->
     ${cr.notes ? `
-    <div>
+    <div style="margin-bottom:14px;">
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;
                   letter-spacing:.6px;color:var(--text-muted);margin-bottom:6px;">
         Additional Notes
@@ -221,19 +238,18 @@ function openDetailModal(id) {
       <div style="font-size:13px;color:var(--text-secondary);">${cr.notes}</div>
     </div>` : ""}
 
-    <!-- Supervisor action message (if acted upon) -->
-    ${cr.status === "approved" ? `
+    ${normalizeStatus(cr.status) === "approved" ? `
     <div style="margin-top:16px;padding:12px 14px;background:var(--green-light);
                 border:1px solid #86EFAC;border-radius:var(--radius);">
       <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:2px;">
         ✅ Approved by Supervisor
       </div>
       <div style="font-size:12.5px;color:#166534;">
-        ${cr.supervisorNote || "The case has been closed."}
+        ${cr.supervisorNote || "The case has been approved for closure."}
       </div>
     </div>` : ""}
 
-    ${cr.status === "rejected" ? `
+    ${normalizeStatus(cr.status) === "rejected" ? `
     <div style="margin-top:16px;padding:12px 14px;background:#FEF2F2;
                 border:1px solid #FECACA;border-radius:var(--radius);">
       <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:2px;">
@@ -245,9 +261,7 @@ function openDetailModal(id) {
     </div>` : ""}
   `;
 
-  // Set View Case link
   document.getElementById("dm-view-case-btn").href = `officer-case-details.html?id=${id}`;
-
   document.getElementById("detail-modal").classList.add("active");
 }
 
