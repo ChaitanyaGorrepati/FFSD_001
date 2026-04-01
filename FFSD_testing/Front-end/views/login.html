@@ -3,121 +3,204 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CivicTrack – Login</title>
+  <title>CivicTrack — Login</title>
   <link rel="stylesheet" href="../css/auth.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Epilogue:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
   <style>
+    /* Superuser overrides */
+    body.superuser-login .right-panel { background: #fdf8ff; }
+
     body.superuser-login .auth-box {
-      border: 2px solid #dea9e2;
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.03) 0%, rgba(139, 92, 246, 0) 100%);
-      padding: 20px;
-      border-radius: 20px;
+      border: 1.5px solid rgba(139,92,246,0.3);
+      background: linear-gradient(135deg, rgba(139,92,246,0.04) 0%, transparent 100%);
+      padding: 2rem;
+      border-radius: 16px;
     }
-    body.superuser-login .auth-title {
-      color: #8b5cf6;
-    }
+
+    body.superuser-login .auth-title { color: #8b5cf6; }
+
     body.superuser-login .btn-primary {
       background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+      box-shadow: 0 4px 16px rgba(139,92,246,0.3);
     }
+
+    body.superuser-login .btn-primary:hover {
+      background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%);
+      box-shadow: 0 8px 28px rgba(139,92,246,0.4);
+    }
+
+    body.superuser-login .section-label { color: #8b5cf6; }
+    body.superuser-login .nav-breadcrumb span { color: #8b5cf6; }
+
+    body.superuser-login .input-wrap input:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
+    }
+
     .superuser-badge {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
-      color: white;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 0.75rem;
+      color: #fff;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
       font-weight: 700;
-      margin-left: 8px;
+      letter-spacing: 0.08em;
+      margin-left: 0.6rem;
+      vertical-align: middle;
     }
   </style>
 </head>
 <body>
 
-  <div class="auth-shell">
+  <div class="ambient ambient-1"></div>
+  <div class="ambient ambient-2"></div>
 
-    <div class="auth-deco">
-      <div class="deco-card">
-        <div class="deco-topbar">
-          <div class="deco-sidebar">
-            <div class="deco-logo-block"></div>
-            <div class="deco-nav-item active"></div>
-            <div class="deco-nav-item"></div>
-            <div class="deco-nav-item"></div>
-            <div class="deco-nav-item"></div>
+  <div class="shell">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="brand">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="8" fill="#e63946" opacity="0.15"/>
+          <path d="M8 18h20M18 8v20M11 11l14 14M25 11L11 25" stroke="#e63946" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="18" cy="18" r="4" fill="#e63946"/>
+        </svg>
+        <div>
+          <div class="brand-name">CivicTrack</div>
+          <div class="brand-tag">MUNICIPAL SYSTEM</div>
+        </div>
+      </div>
+
+      <div class="left-hero">
+        <div class="eyebrow">PORTAL v4.2.1</div>
+        <h1 class="left-title">
+          Govern.<br>
+          <em>Resolve.</em><br>
+          Empower.
+        </h1>
+        <p class="left-body">
+          The unified civic operations platform connecting citizens with municipal
+          services — built for speed, accountability, and transparency at every level.
+        </p>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-num">24<span>k</span></div>
+            <div class="stat-label">ACTIVE CASES</div>
           </div>
-          <div class="deco-content">
-            <div class="deco-header-bar"></div>
-            <div class="deco-stat-row">
-              <div class="deco-stat red"></div>
-              <div class="deco-stat"></div>
-              <div class="deco-stat"></div>
-            </div>
-            <div class="deco-table">
-              <div class="deco-row header"></div>
-              <div class="deco-row"></div>
-              <div class="deco-row"></div>
-              <div class="deco-row"></div>
-              <div class="deco-row short"></div>
-            </div>
+          <div class="stat-item">
+            <div class="stat-num">98<span>%</span></div>
+            <div class="stat-label">UPTIME SLA</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">4<span>.1h</span></div>
+            <div class="stat-label">AVG RESPONSE</div>
           </div>
         </div>
       </div>
+
+      <div class="divider-h"></div>
+
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        <span>ALL SYSTEMS OPERATIONAL</span>
+        <span style="margin-left:auto">SEC-LEVEL: STANDARD</span>
+      </div>
+
+      <div class="vertical-label">CIVICTRACK ACCESS PORTAL — 2025</div>
     </div>
 
-    <div class="auth-panel">
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <svg class="corner-deco" width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <path d="M0 0 L80 0 L80 80" stroke="#e63946" stroke-width="1.5" fill="none"/>
+        <circle cx="80" cy="0" r="3" fill="#e63946"/>
+      </svg>
+
       <div class="auth-box">
 
         <div class="auth-nav">
-          <div class="auth-brand">
-            <span class="brand-dot"></span>
-            <span>CivicTrack</span>
-          </div>
-          <a href="role-selection.html" class="back-link">← Back</a>
+          <div class="nav-breadcrumb">ACCESS / <span>LOGIN</span></div>
+          <a href="role-selection.html" class="back-btn">← BACK</a>
         </div>
 
-        <div class="auth-body">
-          <h2 class="auth-title">Login to CivicTrack<span id="superuser-badge"></span></h2>
-          <p class="auth-sub">
-            Continue as <span id="role-display" class="role-highlight">—</span>
-          </p>
+        <div class="section-label">STEP 02 OF 02</div>
+        <h2 class="auth-title">
+          Welcome back.<span id="superuser-badge"></span>
+        </h2>
+        <p class="auth-sub">
+          Continuing as <span id="role-display" class="role-highlight">—</span>
+        </p>
 
-          <div class="form-group">
-            <label for="username">Username / Name</label>
-            <div class="input-wrap">
-              <span class="input-icon">👤</span>
-              <input type="text" id="username" placeholder="Enter your username" autocomplete="off" />
-            </div>
-            <p id="username-error" class="field-error hidden"></p>
+        <div class="form-group">
+          <label for="username">Username / Name</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input type="text" id="username" placeholder="Enter your username" autocomplete="off" />
           </div>
-
-          <div class="form-group">
-            <label for="password">Password</label>
-            <div class="input-wrap">
-              <span class="input-icon">🔒</span>
-              <input type="password" id="password" placeholder="Enter your password" autocomplete="off" />
-            </div>
-            <p id="password-error" class="field-error hidden"></p>
-          </div>
-
-          <button class="btn-primary full" id="login-btn">Login</button>
-
-          <p class="auth-note">By logging in, you agree to CivicTrack's terms of service and privacy policy.</p>
+          <p id="username-error" class="field-error hidden"></p>
         </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" placeholder="Enter your password" autocomplete="off" />
+          </div>
+          <p id="password-error" class="field-error hidden"></p>
+        </div>
+
+        <button class="btn-primary" id="login-btn">
+          Login
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <!-- Only visible for citizen role -->
+        <div id="register-section" class="hidden">
+          <div class="divider-or"><span>OR</span></div>
+          <a href="register.html" class="btn-secondary">
+            Create an Account
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+          </a>
+        </div>
+
+        <p class="auth-note">
+          By logging in, you agree to CivicTrack's terms of service and privacy policy.
+        </p>
 
       </div>
     </div>
+
   </div>
 
   <script>
     const role = sessionStorage.getItem("ct_selected_role");
+
+    const roleDisplay = document.getElementById("role-display");
+    if (role) {
+      roleDisplay.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    }
+
     if (role === "superuser") {
       document.body.classList.add("superuser-login");
-      const badge = document.getElementById("superuser-badge");
-      badge.innerHTML = ' <span class="superuser-badge">Admin Access</span>';
+      document.getElementById("superuser-badge").innerHTML =
+        '<span class="superuser-badge">ADMIN ACCESS</span>';
+    }
+
+    // Show create account button only for citizens
+    if (role === "citizen") {
+      document.getElementById("register-section").classList.remove("hidden");
     }
   </script>
 
-<script type="module" src="../js/login.js"></script>
+  <script type="module" src="../js/login.js"></script>
 </body>
 </html>
