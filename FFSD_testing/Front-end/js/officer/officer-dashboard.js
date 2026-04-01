@@ -189,5 +189,5 @@ window.saveStatus       = saveStatus;
 window.logout = function() {
   sessionStorage.removeItem("ct_user");
   sessionStorage.removeItem("ct_selected_role");
-  window.location.href = "../../index.html";
+  window.location.href = "../index.html";
 };
