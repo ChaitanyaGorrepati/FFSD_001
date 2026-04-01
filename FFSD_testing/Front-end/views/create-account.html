@@ -12,7 +12,6 @@
 
   <div class="auth-shell">
 
-    <!-- LEFT: decorative mockup (same as login) -->
     <div class="auth-deco">
       <div class="deco-card">
         <div class="deco-topbar">
@@ -41,7 +40,6 @@
       </div>
     </div>
 
-    <!-- RIGHT: registration form -->
     <div class="auth-panel">
       <div class="auth-box">
 
@@ -57,36 +55,36 @@
           <h2 class="auth-title">Create Citizen Account</h2>
           <p class="auth-sub">Register to submit and track complaints</p>
 
-          <div id="successBanner" class="hidden" style="
-            background:#d1fae5; border:1px solid #6ee7b7; color:#065f46;
-            padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:0.875rem;
-          ">
-            Account created! <a href="login.html" style="color:#065f46; font-weight:600;">Login now →</a>
+          <div id="successBanner" class="hidden" style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:0.875rem;">
+            Account created! <a href="login.html" style="color:#065f46;font-weight:600;">Login now →</a>
           </div>
 
+          <!-- Full Name -->
           <div class="form-group">
             <label for="fullname">Full Name</label>
             <div class="input-wrap">
               <span class="input-icon">🪪</span>
-              <input type="text" id="fullname" placeholder="Your full name" autocomplete="off" />
+              <input type="text" id="fullname" placeholder="Letters only, e.g. Ahmed Khan" autocomplete="off" />
             </div>
             <p id="fullname-error" class="field-error hidden"></p>
           </div>
 
+          <!-- Phone Number -->
           <div class="form-group">
-            <label for="username">Username</label>
+            <label for="phone">Phone Number</label>
             <div class="input-wrap">
-              <span class="input-icon">👤</span>
-              <input type="text" id="username" placeholder="Choose a username" autocomplete="off" />
+              <span class="input-icon">📱</span>
+              <input type="tel" id="phone" placeholder="10-digit number, e.g. 9876543210" maxlength="10" autocomplete="off" />
             </div>
-            <p id="username-error" class="field-error hidden"></p>
+            <p id="phone-error" class="field-error hidden"></p>
           </div>
 
+          <!-- Password -->
           <div class="form-group">
             <label for="password">Password</label>
             <div class="input-wrap">
               <span class="input-icon">🔒</span>
-              <input type="password" id="password" placeholder="Create a password" />
+              <input type="password" id="password" placeholder="At least 6 characters" />
             </div>
             <p id="password-error" class="field-error hidden"></p>
           </div>
