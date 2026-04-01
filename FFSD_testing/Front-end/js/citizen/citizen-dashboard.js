@@ -9,6 +9,14 @@ if (!currentUser || currentUser.role !== "citizen") {
   window.location.href = "../../login.html";
 }
 
+// ── Logout ────────────────────────────────────────────────────────────────────
+document.getElementById("logout-btn").addEventListener("click", (e) => {
+  e.preventDefault();
+  sessionStorage.removeItem("ct_user");
+  sessionStorage.removeItem("ct_selected_role");
+  window.location.href = "../login.html";
+});
+
 // ── 2. Update name & avatar ───────────────────────────────────────────────────
 const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
  
