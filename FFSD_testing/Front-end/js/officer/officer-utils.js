@@ -202,6 +202,53 @@ export function formatDate(iso) {
   });
 }
 
+
+// ═══════════════════════════════════════════════════════════════════
+// 8b. SHARED NOTE RENDERER
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Renders structured notes ({ text, author, role, time }) into a container.
+ * Falls back gracefully for legacy plain-string notes.
+ * @param {Array} notes
+ * @param {string} containerId  - id of the <div> to render into
+ */
+export function renderNotes(notes, containerId) {
+  const list = document.getElementById(containerId);
+  if (!list) return;
+
+  if (!notes || !notes.length) {
+    list.innerHTML = `<p style="color:#94A3B8;font-size:13px;">No notes yet.</p>`;
+    return;
+  }
+
+  const roleColors = {
+    citizen:    { bg: "#EFF6FF", text: "#3B82F6" },
+    officer:    { bg: "#ECFDF5", text: "#10B981" },
+    supervisor: { bg: "#F5F3FF", text: "#8B5CF6" },
+    superuser:  { bg: "#FFFBEB", text: "#F59E0B" },
+  };
+
+  list.innerHTML = notes.map(n => {
+    if (typeof n === "string") {
+      return `<div style="padding:10px 12px;background:#F8FAFC;border-radius:8px;margin-bottom:8px;font-size:13px;color:#475569;">${n}</div>`;
+    }
+    const author = n.author || "Unknown";
+    const role   = (n.role || "").toLowerCase();
+    const time   = n.time ? new Date(n.time).toLocaleString("en-US", { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" }) : "";
+    const colors = roleColors[role] || { bg: "#F8FAFC", text: "#64748B" };
+
+    return `<div style="padding:10px 12px;background:#F8FAFC;border-left:3px solid ${colors.text};border-radius:0 8px 8px 0;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+        <span style="font-weight:600;font-size:13px;color:#0F172A;">${author}</span>
+        <span style="background:${colors.bg};color:${colors.text};font-size:10px;font-weight:600;padding:1px 8px;border-radius:20px;text-transform:capitalize;">${role || "user"}</span>
+        ${time ? `<span style="font-size:11px;color:#94A3B8;margin-left:auto;">${time}</span>` : ""}
+      </div>
+      <div style="font-size:13px;color:#475569;line-height:1.5;">${n.text}</div>
+    </div>`;
+  }).join("");
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // 8. NOTIFICATION HELPERS
 // ═══════════════════════════════════════════════════════════════════
