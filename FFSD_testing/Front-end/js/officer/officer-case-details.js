@@ -1,9 +1,11 @@
-// js/officer-case-details.js
+// js/officer/officer-case-details.js
 import {
   getOfficerSession, initOfficerUI, updateSidebarBadges,
   statusBadge, priorityBadge, formatDate,
   updateCaseById, getCaseById
 } from "./officer-utils.js";
+import { createNotification } from "../../models/notificationModel.js";
+import { getUsers } from "../../models/userModel.js";
 
 // ── Session ───────────────────────────────────────────────────────────────────
 const user = getOfficerSession();
@@ -34,6 +36,17 @@ function updateClosureBadge(officerId) {
   ).length;
   const el = document.getElementById("sb-closure-count");
   if (el) el.textContent = count;
+}
+
+// ── Find supervisor by department ────────────────────────────────────────────
+function findSupervisorByDept(dept) {
+  try {
+    const users = getUsers();
+    return users.find(u => u.role === "supervisor" && u.department === dept);
+  } catch (e) {
+    console.log("Could not find supervisor:", e);
+    return null;
+  }
 }
 
 // ── Load & render case ────────────────────────────────────────────────────────
@@ -97,24 +110,75 @@ function loadCase() {
   renderNotes(c.notes || []);
 }
 
+// ── Render Notes (IMPROVED UI) ──────────────────────────────────────────────
 function renderNotes(notes) {
   const list = document.getElementById("notes-list");
   if (!notes.length) {
-    list.innerHTML = `<p style="font-size:13px;color:var(--text-muted);">No notes yet.</p>`;
+    list.innerHTML = `<p style="font-size:13px;color:#999;font-style:italic;padding:12px 0;">No notes yet.</p>`;
     return;
   }
+  
+  // Role color mapping (matching citizen view)
+  const roleColors = {
+    officer:    { bg: "#E8F5E9", border: "#4CAF50", badge: "#4CAF50", text: "#2E7D32" },
+    supervisor: { bg: "#F3E5F5", border: "#9C27B0", badge: "#9C27B0", text: "#6A1B9A" },
+    citizen:    { bg: "#E3F2FD", border: "#2196F3", badge: "#2196F3", text: "#1565C0" },
+    system:     { bg: "#F5F5F5", border: "#9E9E9E", badge: "#9E9E9E", text: "#616161" }
+  };
+  
   list.innerHTML = notes.map(n => {
-    const text = typeof n === "string" ? n : (n.text || String(n));
-    const ts   = typeof n === "object" && n.time ? n.time : null;
-    const by   = typeof n === "object" && n.by   ? n.by   : null;
+    let text, author, role, time, colors;
+    
+    if (typeof n === "string") {
+      // Legacy plain string
+      text = n;
+      author = "Unknown";
+      role = "system";
+      time = new Date().toLocaleDateString("en-GB");
+    } else {
+      // Structured note object
+      text = n.text || "";
+      author = n.author || n.by || "Unknown";
+      role = (n.role || "system").toLowerCase();
+      time = n.time ? formatDateTime(n.time) : new Date().toLocaleDateString("en-GB");
+    }
+    
+    colors = roleColors[role] || roleColors.system;
+    const isMe = author === user.name;
+    
     return `
-      <div style="background:var(--border-light);border-radius:var(--radius);padding:12px 14px;">
-        <p style="font-size:13.5px;color:var(--text-primary);line-height:1.6;">${text}</p>
-        <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">
-          ${by ? `${by} · ` : ""}${ts ? formatDate(ts) : ""}
-        </p>
+      <div style="
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        background: ${colors.bg};
+        border-left: 4px solid ${colors.border};
+        border-radius: 0 8px 8px 0;
+      ">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+          <strong style="font-size:13px;color:#1a1a1a;">${author}</strong>
+          <span style="
+            font-size:11px;
+            font-weight:600;
+            background:${colors.badge}20;
+            color:${colors.badge};
+            padding:2px 8px;
+            border-radius:20px;
+            text-transform:capitalize;
+          ">${role}</span>
+          ${isMe ? `<span style="font-size:11px;color:${colors.badge};font-weight:600;">You</span>` : ""}
+          <span style="font-size:11px;color:#999;margin-left:auto;">${time}</span>
+        </div>
+        <p style="font-size:13px;color:#333;line-height:1.6;margin:0;">${text}</p>
       </div>`;
   }).join("");
+}
+
+function formatDateTime(iso) {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  const dateStr = date.toLocaleDateString("en-GB");
+  const timeStr = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return `${dateStr} · ${timeStr}`;
 }
 
 loadCase();
@@ -132,16 +196,46 @@ document.addEventListener("click", e => {
   if (action === "add-note")      addNote();
 });
 
-// ── Add Note ──────────────────────────────────────────────────────────────────
+// ── Add Note ────────────────────────────────────────────────────────────────
 function addNote() {
   const input = document.getElementById("note-input");
   const text  = input.value.trim();
   if (!text) return;
+  
   const c = getCaseById(caseId);
   if (!c) return;
+  
+  // Create structured note object
+  const note = {
+    text: text,
+    author: user.name,
+    role: "officer",
+    time: new Date().toISOString()
+  };
+  
   const notes = c.notes || [];
-  notes.push({ text, time: new Date().toISOString(), by: user.name });
+  notes.push(note);
   updateCaseById(caseId, { notes });
+  
+  // Create notification for supervisor
+  if (c.department) {
+    const supervisor = findSupervisorByDept(c.department);
+    if (supervisor) {
+      try {
+        createNotification({
+          recipientId: supervisor.id,
+          type: "note",
+          title: "Officer Comment on Case",
+          message: `${user.name} added a note to case ${caseId}`,
+          caseId: caseId,
+          relatedUserId: user.id
+        });
+      } catch (e) {
+        console.log("Notification system not fully initialized, but note was saved");
+      }
+    }
+  }
+  
   input.value = "";
   loadCase();
 }
@@ -276,7 +370,7 @@ function submitClosureRequest() {
       supervisorName: SUPERVISOR_NAMES[supId] || supId,
       summary,
       notes,
-      status:         "pending",         // supervisor will approve/reject
+      status:         "pending",
       requestedBy:    user.id,
       requestedByName: user.name,
       requestedAt:    new Date().toISOString(),

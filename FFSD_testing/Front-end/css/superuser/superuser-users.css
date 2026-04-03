@@ -1,8 +1,101 @@
-/* css/superuser-users.css */
+/* css/superuser/superuser-users.css */
 
 .mb-4 { margin-bottom: 16px; }
 
-/* Modal */
+/* ── Stat Cards ── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  outline: none;
+}
+
+.stat-card:nth-child(1) {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #7dd3fc;
+}
+
+.stat-card:nth-child(2) {
+  background: linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%);
+  border-color: #c4b5fd;
+}
+
+.stat-card:nth-child(3) {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-color: #93c5fd;
+}
+
+.stat-card:nth-child(4) {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #86efac;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.stat-card:nth-child(1):hover { border-color: #38bdf8; box-shadow: 0 8px 24px rgba(56,189,248,0.15); }
+.stat-card:nth-child(2):hover { border-color: #a78bfa; box-shadow: 0 8px 24px rgba(139,92,246,0.15); }
+.stat-card:nth-child(3):hover { border-color: #60a5fa; box-shadow: 0 8px 24px rgba(59,130,246,0.15); }
+.stat-card:nth-child(4):hover { border-color: #4ade80; box-shadow: 0 8px 24px rgba(34,197,94,0.15); }
+
+.stat-value {
+  font-size: 42px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+
+.stat-value.stat-supervisor {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-value.stat-officer {
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-value.stat-citizen {
+  background: linear-gradient(135deg, #16a34a, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -83,7 +176,7 @@
   border-top: 1px solid var(--border);
 }
 
-/* Danger button */
+/* ── Danger button ── */
 .btn-danger {
   background: var(--red);
   color: #fff;
@@ -93,12 +186,12 @@
   background: var(--red-dark);
 }
 
-/* Role badge colours in table */
+/* ── Role badge colours ── */
 .badge-officer    { background: var(--blue-light);   color: var(--blue); }
 .badge-supervisor { background: var(--purple-light); color: var(--purple); }
 .badge-citizen    { background: var(--green-light);  color: #16A34A; }
 
-/* Action buttons in table */
+/* ── Action buttons ── */
 .action-btn {
   display: inline-flex;
   align-items: center;
@@ -125,3 +218,10 @@
 }
 
 .action-btn.delete:hover { background: #fee2e2; }
+
+.flex { display: flex; }
+.gap-2 { gap: 0.5rem; }
+.items-center { align-items: center; }
+.font-semibold { font-weight: 600; }
+.text-muted { color: #9ca3af; }
+.text-sm { font-size: 0.875rem; }

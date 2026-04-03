@@ -89,3 +89,24 @@ export function createCitizenAccount({ name, username, password }) {
 
   return { success: true, user: newUser };
 }
+// ── Add a new user ────────────────────────────────────────────────────────────
+export function addUser(user) {
+  const users = getUsers();
+  users.push(user);
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+// ── Update an existing user by ID ─────────────────────────────────────────────
+export function updateUser(id, updates) {
+  const users = getUsers();
+  const index = users.findIndex(u => u.id === id);
+  if (index === -1) return;
+  users[index] = { ...users[index], ...updates };
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+// ── Delete a user by ID ───────────────────────────────────────────────────────
+export function deleteUser(id) {
+  const users = getUsers().filter(u => u.id !== id);
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}

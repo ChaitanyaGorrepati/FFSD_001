@@ -1,6 +1,14 @@
-// js/superuser-departments.js
-import { initDepartments } from "../models/departmentModel.js";
-import { fetchDepartments, createDepartment, editDepartment, removeDepartment } from "../routes/departmentRoutes.js";
+// js/superuser/superuser-departments.js
+import { initDepartments } from "../../models/departmentModel.js";
+import { fetchDepartments, createDepartment, editDepartment, removeDepartment } from "../../routes/departmentRoutes.js";
+
+// ── Auth Guard (runs after imports) ──────────────────────────────────────────
+(function() {
+  const _su = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+  if (!_su || _su.role !== "superuser") {
+    window.location.href = "../role-selection.html";
+  }
+})();
 
 // ── State ──────────────────────────────────────────────
 let pendingDeleteName = null;
@@ -35,14 +43,15 @@ function renderCategoryTags() {
       <span class="rm" data-index="${i}" title="Remove">×</span>
     </div>
   `).join("");
-
-  catTags.querySelectorAll(".rm").forEach(btn => {
-    btn.addEventListener("click", () => {
-      currentCategories.splice(parseInt(btn.dataset.index), 1);
-      renderCategoryTags();
-    });
-  });
 }
+
+catTags.addEventListener("click", e => {
+  const rmBtn = e.target.closest(".rm");
+  if (rmBtn) {
+    currentCategories.splice(parseInt(rmBtn.dataset.index), 1);
+    renderCategoryTags();
+  }
+});
 
 function addCategory() {
   const val = catInput.value.trim();
@@ -74,6 +83,10 @@ function renderTable() {
         <td><div style="display:flex;flex-wrap:wrap;gap:4px;">${pills}</div></td>
         <td>
           <div class="flex gap-2">
+            <button class="action-btn view" data-name="${d.name}">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              View
+            </button>
             <button class="action-btn edit" data-name="${d.name}">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               Edit
@@ -87,14 +100,22 @@ function renderTable() {
       </tr>
     `;
   }).join("");
-
-  tbody.querySelectorAll(".action-btn.edit").forEach(btn => {
-    btn.addEventListener("click", () => openEditModal(btn.dataset.name));
-  });
-  tbody.querySelectorAll(".action-btn.delete").forEach(btn => {
-    btn.addEventListener("click", () => openConfirmModal(btn.dataset.name));
-  });
 }
+
+tbody.addEventListener("click", e => {
+  const viewBtn   = e.target.closest(".action-btn.view");
+  const editBtn   = e.target.closest(".action-btn.edit");
+  const deleteBtn = e.target.closest(".action-btn.delete");
+
+  if (viewBtn) {
+    const name = viewBtn.dataset.name;
+    window.location.href = `superuser-department-detail.html?dept=${encodeURIComponent(name)}`;
+  } else if (editBtn) {
+    openEditModal(editBtn.dataset.name);
+  } else if (deleteBtn) {
+    openConfirmModal(deleteBtn.dataset.name);
+  }
+});
 
 // ── Open Add Modal ─────────────────────────────────────
 function openAddModal() {
@@ -190,7 +211,5 @@ deptModal.addEventListener("click", e => { if (e.target === deptModal) closeDept
 confirmModal.addEventListener("click", e => { if (e.target === confirmModal) closeConfirmModal(); });
 
 // ── Init ───────────────────────────────────────────────
-window.addEventListener("DOMContentLoaded", () => {
-  initDepartments();
-  renderTable();
-});
+initDepartments();
+renderTable();

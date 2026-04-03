@@ -1,16 +1,23 @@
 // js/citizen/citizen-submit-complaint.js
 import { submitCase, getOfficers } from "../index.js";
 
-// ── 1. Get session FIRST (must be before anything uses currentUser) ────────────
+// ── 1. Session guard ──────────────────────────────────────────────────────────
 const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
 
 if (!currentUser || currentUser.role !== "citizen") {
   window.location.href = "../../login.html";
 }
 
+document.getElementById("logout-btn").addEventListener("click", (e) => {
+  e.preventDefault();
+  sessionStorage.removeItem("ct_user");
+  sessionStorage.removeItem("ct_selected_role");
+  window.location.href = "../login.html";
+});
+
 // ── 2. Update name & avatar ───────────────────────────────────────────────────
 const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
- 
+
 document.getElementById("sidebarUserName").textContent = currentUser.name;
 document.getElementById("topbarUserName").textContent  = currentUser.name;
 document.querySelectorAll(".avatar").forEach(el => el.textContent = initials);
@@ -39,6 +46,11 @@ const successBanner  = document.getElementById("successBanner");
 const fileInput      = document.getElementById("fEvidence");
 const fileList       = document.getElementById("fileList");
 const uploadZone     = document.getElementById("uploadZone");
+
+// ── Phone: digits only, max 10 ────────────────────────────────────────────────
+phoneInput.addEventListener("input", () => {
+  phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
+});
 
 // ── Category sync ─────────────────────────────────────────────────────────────
 function updateCategories(dept) {
@@ -102,36 +114,48 @@ function setError(id, msg) { const el = document.getElementById(id); if (el) el.
 
 function validateForm() {
   let valid = true;
-  ["errDepartment","errCategory","errZone","errTitle"].forEach(clearError);
-  [deptSelect, catSelect, zoneSelect, titleInput].forEach(el => el.classList.remove("error"));
 
-  if (!deptSelect.value) { setError("errDepartment", "Please select a department."); deptSelect.classList.add("error"); valid = false; }
-  if (!catSelect.value)  { setError("errCategory", deptSelect.value ? "Please select a category." : "Select a department first."); catSelect.classList.add("error"); valid = false; }
-  if (!zoneSelect.value) { setError("errZone", "Please select a zone."); zoneSelect.classList.add("error"); valid = false; }
-  if (!titleInput.value.trim()) { setError("errTitle", "Complaint title is required."); titleInput.classList.add("error"); valid = false; }
+  ["errDepartment","errCategory","errZone","errTitle","errPhone"].forEach(clearError);
+  [deptSelect, catSelect, zoneSelect, titleInput, phoneInput].forEach(el => el.classList.remove("error"));
+
+  if (!deptSelect.value) {
+    setError("errDepartment", "Please select a department.");
+    deptSelect.classList.add("error"); valid = false;
+  }
+  if (!catSelect.value) {
+    setError("errCategory", deptSelect.value ? "Please select a category." : "Select a department first.");
+    catSelect.classList.add("error"); valid = false;
+  }
+  if (!zoneSelect.value) {
+    setError("errZone", "Please select a zone.");
+    zoneSelect.classList.add("error"); valid = false;
+  }
+  if (!titleInput.value.trim()) {
+    setError("errTitle", "Complaint title is required.");
+    titleInput.classList.add("error"); valid = false;
+  }
+
+  // Phone: mandatory, exactly 10 digits
+  const phone = phoneInput.value.trim();
+  if (!phone) {
+    setError("errPhone", "Contact phone number is required.");
+    phoneInput.classList.add("error"); valid = false;
+  } else if (!/^\d{10}$/.test(phone)) {
+    setError("errPhone", "Phone number must be exactly 10 digits.");
+    phoneInput.classList.add("error"); valid = false;
+  }
 
   return valid;
 }
 
-// ── FIX 2: Encode uploaded files as base64 so they persist in localStorage ───
-/**
- * Reads all files selected in fileInput and returns a Promise resolving to
- * an array of { name, type, data } objects (data = base64 data-URL string).
- * This is added as a NEW function – nothing existing is changed.
- */
+// ── Encode attachments ────────────────────────────────────────────────────────
 function encodeAttachments() {
   const files = Array.from(fileInput.files);
   if (!files.length) return Promise.resolve([]);
-
   return Promise.all(
     files.map(file => new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = e => resolve({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        src:  e.target.result   // base64 data-URL – can be set as <img src>
-      });
+      reader.onload  = e => resolve({ name: file.name, type: file.type, size: file.size, src: e.target.result });
       reader.onerror = () => resolve({ name: file.name, type: file.type, size: file.size, src: "" });
       reader.readAsDataURL(file);
     }))
@@ -139,13 +163,12 @@ function encodeAttachments() {
 }
 
 // ── Submit ────────────────────────────────────────────────────────────────────
-submitBtn.addEventListener("click", async () => {          // ← made async for await
+submitBtn.addEventListener("click", async () => {
   if (!validateForm()) return;
 
   submitBtn.classList.add("loading");
   submitBtn.textContent = "Submitting...";
 
-  // ── FIX 2b: encode attachments before building data object ────────────────
   const attachments = await encodeAttachments();
 
   const data = {
@@ -158,11 +181,9 @@ submitBtn.addEventListener("click", async () => {          // ← made async for
     phone:         phoneInput.value.trim(),
     priority:      prioritySelect.value,
     contactTime:   contactTime.value,
-    // ── FIX 1: send both fields so caseController can map to `citizen` ──────
     submittedBy:   currentUser.id,
     submittedName: currentUser.name,
-    // ── FIX 2c: attach encoded files to the case object ─────────────────────
-    attachments:   attachments        // ← new field, empty array if no files
+    attachments:   attachments
   };
 
   setTimeout(() => {
@@ -189,7 +210,7 @@ saveDraftBtn.addEventListener("click", () => {
     location: locationInput.value.trim(), phone: phoneInput.value.trim(), priority: prioritySelect.value
   };
   localStorage.setItem("complaint_draft", JSON.stringify(draft));
-  saveDraftBtn.textContent = "Draft Saved ✓";
+  saveDraftBtn.textContent = "Draft Saved \u2713";
   setTimeout(() => { saveDraftBtn.textContent = "Save Draft"; }, 2000);
 });
 
@@ -228,7 +249,7 @@ function restoreDraft() {
 updateCategories("");
 restoreDraft();
 
-[deptSelect, catSelect, zoneSelect, titleInput].forEach(el => {
+[deptSelect, catSelect, zoneSelect, titleInput, phoneInput].forEach(el => {
   el.addEventListener("change", () => el.classList.remove("error"));
   el.addEventListener("input",  () => el.classList.remove("error"));
 });

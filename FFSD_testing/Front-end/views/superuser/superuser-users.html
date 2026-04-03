@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CivicTrack – User Management</title>
   <link rel="stylesheet" href="../../css/global.css" />
-  <link rel="stylesheet" href="../../css/superuser-users.css" />
+  <link rel="stylesheet" href="../../css/superuser/superuser-users.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -51,10 +51,14 @@
       </div>
 
       <div class="sidebar-footer">
+        <a href="#" id="logout-btn" onclick="sessionStorage.clear();window.location.href='../role-selection.html';return false;" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text-muted,#888);text-decoration:none;font-size:0.85rem;margin-bottom:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(220,38,38,0.08)';this.style.color='#dc2626';" onmouseout="this.style.background='';this.style.color='var(--text-muted,#888)';">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </a>
         <div class="sidebar-user">
-          <div class="avatar">SU</div>
+          <div class="avatar" id="su-avatar">SU</div>
           <div class="sidebar-user-info">
-            <div class="name">Super User</div>
+            <div class="name" id="su-name">Super User</div>
             <div class="role">System Admin</div>
           </div>
         </div>
@@ -72,8 +76,8 @@
         </div>
         <div class="topbar-right">
           <div class="topbar-user">
-            <div class="avatar sm">SU</div>
-            <span class="name">Super User</span>
+            <div class="avatar sm" id="su-topbar-avatar">SU</div>
+            <span class="name" id="su-topbar-name">Super User</span>
           </div>
         </div>
       </header>
@@ -87,6 +91,26 @@
           <button class="btn btn-primary" id="btn-add-user">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add User
+          </button>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <button class="stat-card stat-filter-btn" data-role="all">
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-label">Total Users</div>
+          </button>
+          <button class="stat-card stat-filter-btn" data-role="supervisor">
+            <div class="stat-value stat-supervisor" id="stat-supervisors">0</div>
+            <div class="stat-label">Supervisors</div>
+          </button>
+          <button class="stat-card stat-filter-btn" data-role="officer">
+            <div class="stat-value stat-officer" id="stat-officers">0</div>
+            <div class="stat-label">Officers</div>
+          </button>
+          <button class="stat-card stat-filter-btn" data-role="citizen">
+            <div class="stat-value stat-citizen" id="stat-citizens">0</div>
+            <div class="stat-label">Citizens</div>
           </button>
         </div>
 
@@ -139,13 +163,18 @@
           <span class="error-text hidden" id="err-name"></span>
         </div>
 
+        <div class="form-group mt-4" id="password-group">
+          <label class="form-label" for="user-password">Password <span class="req">*</span></label>
+          <input type="text" class="input" id="user-password" placeholder="Set user password" />
+          <span class="error-text hidden" id="err-password"></span>
+        </div>
+
         <div class="form-group mt-4">
           <label class="form-label" for="user-role">Role <span class="req">*</span></label>
           <select class="select" id="user-role">
             <option value="">— Select Role —</option>
             <option value="officer">Officer</option>
             <option value="supervisor">Supervisor</option>
-            <option value="citizen">Citizen</option>
           </select>
           <span class="error-text hidden" id="err-role"></span>
         </div>
@@ -165,6 +194,7 @@
             <option value="Zone A">Zone A</option>
             <option value="Zone B">Zone B</option>
             <option value="Zone C">Zone C</option>
+            <option value="Zone D">Zone D</option>
           </select>
         </div>
 
@@ -197,6 +227,23 @@
     </div>
   </div>
 
-  <script type="module" src="../../js/superuser-users.js"></script>
+  <script>
+    (function() {
+      const u = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+      if (!u) return;
+      const initials = u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      ["su-avatar", "su-topbar-avatar"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = initials;
+      });
+      ["su-name", "su-topbar-name"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = u.name;
+      });
+    })();
+  </script>
+
+  <script type="module" src="../../js/main.js"></script>
+  <script type="module" src="../../js/superuser/superuser-users.js"></script>
 </body>
 </html>

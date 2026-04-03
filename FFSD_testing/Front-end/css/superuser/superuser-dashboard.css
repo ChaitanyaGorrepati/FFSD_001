@@ -1,4 +1,4 @@
-/* css/superuser-dashboard.css */
+/* css/superuser/superuser-dashboard.css */
 
 /* ── Statistics Grid ── */
 .stats-grid {
@@ -84,6 +84,7 @@
 }
 
 /* ── Quick Links ── */
+.quick-links-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
@@ -147,4 +148,6 @@
   flex-shrink: 0;
 }
 
-.mb-4 { margin-bottom: 16px; }
+.mb-4 {
+  margin-bottom: 16px;
+}

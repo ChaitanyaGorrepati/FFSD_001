@@ -1,8 +1,18 @@
-// js/superuser-dashboard.js
-import { initUsers } from "../models/userModel.js";
-import { initDepartments, getDepartments } from "../models/departmentModel.js";
-import { initCases, getCases } from "../models/caseModel.js";
-import { fetchUsers } from "../routes/userRoutes.js";
+// js/superuser/superuser-dashboard.js
+import { initUsers } from "../../models/userModel.js";
+import { initDepartments, getDepartments } from "../../models/departmentModel.js";
+import { initCases, getCases } from "../../models/caseModel.js";
+import { fetchUsers } from "../../routes/userRoutes.js";
+
+// ── Auth Guard (runs after imports) ──────────────────────────────────────────
+(function() {
+  const _su = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+  if (!_su || _su.role !== "superuser") {
+    window.location.href = "../role-selection.html";
+  }
+})();
+
+
 
 function statusBadge(status) {
   const map = {
@@ -55,10 +65,9 @@ function renderRecentCases() {
   `).join("");
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  initCases();
-  initUsers();
-  initDepartments();
-  renderStats();
-  renderRecentCases();
-});
+// Init directly (scripts at bottom of body)
+initCases();
+initUsers();
+initDepartments();
+renderStats();
+renderRecentCases();

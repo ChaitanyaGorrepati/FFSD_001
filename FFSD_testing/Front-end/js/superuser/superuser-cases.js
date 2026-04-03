@@ -1,5 +1,16 @@
-// js/superuser-cases.js
-import { initCases, getCases, updateCase } from "../models/caseModel.js";
+// js/superuser/superuser-cases.js
+import { initCases, getCases, updateCase, deleteCase } from "../../models/caseModel.js";
+import { getUsers } from "../../models/userModel.js";
+
+// ── Auth Guard (runs after imports) ──────────────────────────────────────────
+(function() {
+  const _su = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+  if (!_su || _su.role !== "superuser") {
+    window.location.href = "../role-selection.html";
+  }
+})();
+
+
 
 // ── State ──────────────────────────────────────────────
 let currentFilter = "all";
@@ -15,16 +26,34 @@ const searchInput = document.getElementById("search-input");
 const deptFilter  = document.getElementById("dept-filter");
 
 // ── Helpers ────────────────────────────────────────────
+
+// ── Resolve citizen name from id ───────────────────────
+function resolveCitizenName(citizenId) {
+  if (!citizenId) return "Unknown";
+  const users = getUsers();
+  const user = users.find(u => u.id === citizenId);
+  return user ? user.name : citizenId;
+}
+
+function resolveAssigneeName(userId) {
+  if (!userId) return "Unassigned";
+  const users = getUsers();
+  const user = users.find(u => u.id === userId);
+  return user ? user.name : "Unknown Officer";
+}
+
 function statusBadge(status) {
   const map = {
-    open:        "badge-open",
-    "in-progress": "badge-in-progress",
-    resolved:    "badge-resolved",
-    closed:      "badge-closed"
+    "Assigned":    "badge-assigned",
+    "In Progress": "badge-progress",
+    "Resolved":    "badge-resolved",
+    "Closed":      "badge-closed",
+    "Pending":     "badge-pending",
+    "Transferred": "badge-closed",
+    "Rejected":    "badge-closed"
   };
   const cls = map[status] || "badge-closed";
-  const displayText = status === "in-progress" ? "In Progress" : capitalize(status);
-  return `<span class="badge ${cls}">${displayText}</span>`;
+  return `<span class="badge ${cls}">${status || "Unknown"}</span>`;
 }
 
 function capitalize(s) {
@@ -34,10 +63,10 @@ function capitalize(s) {
 function updateStatistics() {
   const cases = getCases();
   const total = cases.length;
-  const open = cases.filter(c => c.status === "open").length;
-  const inProgress = cases.filter(c => c.status === "in-progress").length;
-  const resolved = cases.filter(c => c.status === "resolved").length;
-  const closed = cases.filter(c => c.status === "closed").length;
+  const open = cases.filter(c => ["Assigned", "Pending"].includes(c.status)).length;
+  const inProgress = cases.filter(c => c.status === "In Progress").length;
+  const resolved = cases.filter(c => c.status === "Resolved").length;
+  const closed = cases.filter(c => ["Closed", "Transferred", "Rejected"].includes(c.status)).length;
 
   document.getElementById("stat-total").textContent = total;
   document.getElementById("stat-open").textContent = open;
@@ -53,7 +82,11 @@ function renderTable() {
   
   // Apply status filter
   if (currentFilter !== "all") {
-    cases = cases.filter(c => c.status === currentFilter);
+    if (currentFilter === "Assigned") {
+      cases = cases.filter(c => ["Assigned", "Pending"].includes(c.status));
+    } else {
+      cases = cases.filter(c => c.status === currentFilter);
+    }
   }
   
   // Apply department filter
@@ -64,10 +97,12 @@ function renderTable() {
   // Apply search filter
   if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase();
-    cases = cases.filter(c => 
-      c.id.toLowerCase().includes(query) || 
-      c.citizenName.toLowerCase().includes(query)
-    );
+    cases = cases.filter(c => {
+      const citizenName = resolveCitizenName(c.citizenId || c.submittedBy);
+      return c.id.toLowerCase().includes(query) ||
+             citizenName.toLowerCase().includes(query) ||
+             (c.title || "").toLowerCase().includes(query);
+    });
   }
 
   console.log("Filtered cases:", cases.length);
@@ -77,34 +112,51 @@ function renderTable() {
     return;
   }
 
-  tbody.innerHTML = cases.map(c => `
+  tbody.innerHTML = cases.map(c => {
+    const citizenName = resolveCitizenName(c.citizenId || c.submittedBy);
+    const dateStr = c.dateFiled || c.createdAt;
+    return `
     <tr>
       <td><span class="font-semibold">${c.id}</span></td>
-      <td>${c.citizenName}</td>
-      <td>${c.category}</td>
-      <td>${c.department}</td>
+      <td>${citizenName}</td>
+      <td>${c.category || c.title || "—"}</td>
+      <td>${c.department || "—"}</td>
       <td>${statusBadge(c.status)}</td>
-      <td>${new Date(c.dateFiled).toLocaleDateString()}</td>
+      <td>${dateStr ? new Date(dateStr).toLocaleDateString("en-IN") : "—"}</td>
       <td>
         <div class="flex gap-2">
           <button class="action-btn view" data-id="${c.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             View
           </button>
+          <button class="action-btn delete" data-id="${c.id}" style="color: #ef4444; border-color: #fca5a5; background: #fef2f2;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            Delete
+          </button>
         </div>
       </td>
-    </tr>
-  `).join("");
+    </tr>`;
+  }).join("");
 
-  // Attach row-level listeners
-  const viewBtns = tbody.querySelectorAll(".action-btn.view");
-  console.log("Found", viewBtns.length, "view buttons");
-  viewBtns.forEach(btn => {
-    const caseId = btn.dataset.id;
-    console.log("Attaching click listener to view button for case:", caseId);
-    btn.addEventListener("click", () => openViewModal(caseId));
-  });
 }
+
+// Event Delegation for Table Buttons
+tbody.addEventListener("click", e => {
+  const viewBtn = e.target.closest(".action-btn.view");
+  const deleteBtn = e.target.closest(".action-btn.delete");
+  
+  if (viewBtn) {
+    const caseId = viewBtn.dataset.id;
+    openViewModal(caseId);
+  } else if (deleteBtn) {
+    const caseId = deleteBtn.dataset.id;
+    if (confirm(`Are you sure you want to delete case ${caseId}? This action cannot be undone.`)) {
+      deleteCase(caseId);
+      updateStatistics();
+      renderTable();
+    }
+  }
+});
 
 // ── Open View Modal ────────────────────────────────────
 function openViewModal(id) {
@@ -121,15 +173,19 @@ function openViewModal(id) {
   modalTitle.textContent = `Case ${id}`;
   document.getElementById("view-case-id").value = id;
   document.getElementById("view-case-id-display").value = caseData.id;
-  document.getElementById("view-citizen-name").value = caseData.citizenName;
-  document.getElementById("view-category").value = caseData.category;
+  document.getElementById("view-citizen-name").value = resolveCitizenName(caseData.citizenId || caseData.submittedBy);
+  document.getElementById("view-category").value = caseData.category || caseData.title || "—";
   document.getElementById("view-department").value = caseData.department;
-  document.getElementById("view-status").value = caseData.status === "in-progress" ? "In Progress" : capitalize(caseData.status);
+  document.getElementById("view-assigned-to").value = resolveAssigneeName(caseData.officerId || caseData.assignedTo);
+  document.getElementById("view-status").value = caseData.status || "—";
   document.getElementById("view-description").value = caseData.description;
   document.getElementById("view-date-filed").value = new Date(caseData.dateFiled).toLocaleDateString();
   
   // Set current status in update dropdown
-  document.getElementById("update-status").value = caseData.status;
+  const updateSel = document.getElementById("update-status");
+  const realStatus = caseData.status;
+  updateSel.value = realStatus;
+  if (!updateSel.value) updateSel.value = "Assigned"; // fallback
   
   // Clear note input
   document.getElementById("add-note").value = "";
@@ -148,12 +204,15 @@ function loadNotes(caseData) {
     return;
   }
   
-  notesList.innerHTML = caseData.notes.map((note, idx) => `
-    <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb;">
-      <div style="font-weight: 500; color: #0f172a;">${note.text}</div>
-      <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">${new Date(note.timestamp).toLocaleString()}</div>
-    </div>
-  `).join("");
+  notesList.innerHTML = caseData.notes.map((note, idx) => {
+    // Notes can be objects {text/label, timestamp} or plain strings
+    const text = typeof note === "string" ? note : (note.text || note.label || JSON.stringify(note));
+    const ts = note.timestamp ? new Date(note.timestamp).toLocaleString("en-IN") : "";
+    return `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
+      <div style="font-weight:500;color:#0f172a;">${text}</div>
+      ${ts ? `<div style="font-size:12px;color:#9ca3af;margin-top:4px;">${ts}</div>` : ""}
+    </div>`;
+  }).join("");
 }
 
 function closeCaseModal() {
@@ -175,9 +234,9 @@ document.getElementById("status-filter").addEventListener("click", e => {
 document.querySelectorAll(".stat-filter-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     const status = btn.dataset.status;
-    // Update active filter tab to match
     document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
-    document.querySelector(`.filter-tab[data-status="${status}"]`).classList.add("active");
+    const matchTab = document.querySelector(`.filter-tab[data-status="${status}"]`);
+    if (matchTab) matchTab.classList.add("active");
     currentFilter = status;
     renderTable();
   });
@@ -271,7 +330,8 @@ document.getElementById("btn-case-close").addEventListener("click", closeCaseMod
 caseModal.addEventListener("click", e => { if (e.target === caseModal) closeCaseModal(); });
 
 // ── Init ───────────────────────────────────────────────
-window.addEventListener("DOMContentLoaded", () => {
+// Init directly (scripts at bottom of body)
+(function() {
   console.log("Initializing cases...");
   initCases();
   const loadedCases = getCases();
@@ -279,4 +339,4 @@ window.addEventListener("DOMContentLoaded", () => {
   console.log("Number of cases:", loadedCases.length);
   updateStatistics();
   renderTable();
-});
+})();

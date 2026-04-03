@@ -1,6 +1,6 @@
 /**
  * role-selection.js
- * Place at: js/role-selection.js
+ * 
  *
  * Handles role selection UI and persists choice to sessionStorage.
  * No imports needed — no routes called here.

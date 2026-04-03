@@ -3,98 +3,169 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CivicTrack – Select Your Role</title>
-    <link rel="stylesheet" href="/FFSD_001/FFSD_testing/Front-end/css/auth.css" />
+  <title>CivicTrack — Select Your Role</title>
+  <link rel="stylesheet" href="../css/auth.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Epilogue:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 </head>
 <body>
 
-  <div class="auth-shell">
+  <!-- Ambient background blobs (required by auth.css) -->
+  <div class="ambient ambient-1"></div>
+  <div class="ambient ambient-2"></div>
 
-    <!-- LEFT PANEL: decorative dashboard mockup -->
-    <div class="auth-deco">
-      <div class="deco-card">
-        <div class="deco-topbar">
-          <div class="deco-sidebar">
-            <div class="deco-logo-block"></div>
-            <div class="deco-nav-item active"></div>
-            <div class="deco-nav-item"></div>
-            <div class="deco-nav-item"></div>
-            <div class="deco-nav-item"></div>
+  <div class="shell">
+
+    <!-- LEFT PANEL: dark branded hero -->
+    <div class="left-panel">
+
+      <div class="brand">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="8" fill="#e63946" opacity="0.15"/>
+          <path d="M8 18h20M18 8v20M11 11l14 14M25 11L11 25" stroke="#e63946" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="18" cy="18" r="4" fill="#e63946"/>
+        </svg>
+        <div>
+          <div class="brand-name">CivicTrack</div>
+          <div class="brand-tag">MUNICIPAL SYSTEM</div>
+        </div>
+      </div>
+
+      <div class="left-hero">
+        <div class="eyebrow">PORTAL v4.2.1</div>
+        <h1 class="left-title">
+          Govern.<br>
+          <em>Resolve.</em><br>
+          Empower.
+        </h1>
+        <p class="left-body">
+          The unified civic operations platform connecting citizens with municipal
+          services — built for speed, accountability, and transparency at every level.
+        </p>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-num">24<span>k</span></div>
+            <div class="stat-label">ACTIVE CASES</div>
           </div>
-          <div class="deco-content">
-            <div class="deco-header-bar"></div>
-            <div class="deco-stat-row">
-              <div class="deco-stat red"></div>
-              <div class="deco-stat"></div>
-              <div class="deco-stat"></div>
-            </div>
-            <div class="deco-table">
-              <div class="deco-row header"></div>
-              <div class="deco-row"></div>
-              <div class="deco-row"></div>
-              <div class="deco-row"></div>
-              <div class="deco-row short"></div>
-            </div>
+          <div class="stat-item">
+            <div class="stat-num">98<span>%</span></div>
+            <div class="stat-label">UPTIME SLA</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">4<span>.1h</span></div>
+            <div class="stat-label">AVG RESPONSE</div>
           </div>
         </div>
       </div>
+
+      <div class="divider-h"></div>
+
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        <span>ALL SYSTEMS OPERATIONAL</span>
+        <span style="margin-left:auto">SEC-LEVEL: STANDARD</span>
+      </div>
+
+      <div class="vertical-label">CIVICTRACK ACCESS PORTAL — 2025</div>
+
     </div>
 
     <!-- RIGHT PANEL: role selection form -->
-    <div class="auth-panel">
+    <div class="right-panel">
+
+      <!-- Decorative corner bracket -->
+      <svg class="corner-deco" width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <path d="M0 0 L80 0 L80 80" stroke="#e63946" stroke-width="1.5" fill="none"/>
+        <circle cx="80" cy="0" r="3" fill="#e63946"/>
+      </svg>
+
       <div class="auth-box">
 
         <div class="auth-nav">
-          <div class="auth-brand">
-            <span class="brand-dot"></span>
-            <span>CivicTrack</span>
-          </div>
-          <a href="index.html" class="back-link">← Back</a>
+          <div class="nav-breadcrumb">ACCESS / <span>ROLE_SELECT</span></div>
+          <a href="index.html" class="back-btn">← BACK</a>
         </div>
 
-        <div class="auth-body">
-          <h2 class="auth-title">Select Your Role</h2>
-          <p class="auth-sub">Choose how you want to access this system</p>
+        <div class="section-label">STEP 01 OF 02</div>
+        <h2 class="auth-title">Choose your<br>access level.</h2>
+        <p class="auth-sub">Select the role that matches your credentials. This determines your system permissions and dashboard view.</p>
 
-          <div class="role-grid">
-            <label class="role-option" data-role="citizen">
-              <input type="radio" name="role" value="citizen" hidden />
-              <div class="role-icon-wrap">👤</div>
-              <span class="role-label">Citizen</span>
-              <span class="role-desc">Report and track complaints</span>
-            </label>
-            <label class="role-option" data-role="officer">
-              <input type="radio" name="role" value="officer" hidden />
-              <div class="role-icon-wrap">🛠</div>
-              <span class="role-label">Officer</span>
-              <span class="role-desc">Manage assigned cases</span>
-            </label>
-            <label class="role-option" data-role="supervisor">
-              <input type="radio" name="role" value="supervisor" hidden />
-              <div class="role-icon-wrap">📊</div>
-              <span class="role-label">Supervisor</span>
-              <span class="role-desc">Oversee and approve resolutions</span>
-            </label>
-            <label class="role-option" data-role="superuser">
-              <input type="radio" name="role" value="superuser" hidden />
-              <div class="role-icon-wrap">⚙️</div>
-              <span class="role-label">Super User</span>
-              <span class="role-desc">Full system management</span>
-            </label>
-          </div>
+        <div class="role-grid">
 
-          <p id="role-error" class="field-error hidden">Please select a role to continue.</p>
+          <label class="role-option" data-role="citizen">
+            <input type="radio" name="role" value="citizen" hidden />
+            <div class="role-check">
+              <svg viewBox="0 0 9 9" fill="none">
+                <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="role-icon-wrap">👤</div>
+            <span class="role-label">Citizen</span>
+            <span class="role-desc">Report and track complaints</span>
+            <span class="access-badge">L1</span>
+          </label>
 
-          <button class="btn-primary full" id="continue-btn">Continue</button>
+          <label class="role-option" data-role="officer">
+            <input type="radio" name="role" value="officer" hidden />
+            <div class="role-check">
+              <svg viewBox="0 0 9 9" fill="none">
+                <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="role-icon-wrap">🛠</div>
+            <span class="role-label">Officer</span>
+            <span class="role-desc">Manage assigned cases</span>
+            <span class="access-badge">L2</span>
+          </label>
+
+          <label class="role-option" data-role="supervisor">
+            <input type="radio" name="role" value="supervisor" hidden />
+            <div class="role-check">
+              <svg viewBox="0 0 9 9" fill="none">
+                <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="role-icon-wrap">📊</div>
+            <span class="role-label">Supervisor</span>
+            <span class="role-desc">Oversee and approve resolutions</span>
+            <span class="access-badge">L3</span>
+          </label>
+
+          <label class="role-option" data-role="superuser">
+            <input type="radio" name="role" value="superuser" hidden />
+            <div class="role-check">
+              <svg viewBox="0 0 9 9" fill="none">
+                <path d="M1.5 4.5L3.5 6.5L7.5 2.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="role-icon-wrap">⚙️</div>
+            <span class="role-label">Super User</span>
+            <span class="role-desc">Full system management</span>
+            <span class="access-badge">ROOT</span>
+          </label>
+
         </div>
+
+        <p id="role-error" class="field-error hidden">⚠ No role selected. Please choose one to proceed.</p>
+
+        <button class="btn-primary" id="continue-btn">
+          Continue to Login
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <p class="auth-note">
+          AUTHORIZED ACCESS ONLY — UNAUTHORIZED USE IS PROHIBITED<br>
+          ALL SESSIONS ARE LOGGED AND MONITORED
+        </p>
 
       </div>
     </div>
 
   </div>
 
- <script src="../js/role-selection.js"></script>
+  <script src="../js/role-selection.js"></script>
+
 </body>
 </html>
