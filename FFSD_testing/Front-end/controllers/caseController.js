@@ -1,4 +1,3 @@
-
 import { addCase, getCases, updateCase } from "../models/caseModel.js";
 import { getOfficers } from "../models/userModel.js";
 
@@ -83,20 +82,53 @@ export function handleUpdateStatus(id, status) {
   return { success: true };
 }
 
-// ✅ NEW: UPDATE PRIORITY (kept from your commit)
+// ✅ UPDATE PRIORITY
 export function handleUpdatePriority(id, priority) {
   updateCase(id, { priority });
   return { success: true };
 }
 
-// ── ADD NOTE ──────────────────────────────────────────────────────────────────
+// ── ADD NOTE (FIX #5: Standardize note structure) ────────────────────────────
 export function handleAddNote(id, note) {
   const cases = getCases();
   const target = cases.find(c => c.id === id);
 
   if (target) {
     const notes = target.notes || [];
-    notes.push(note);
+    
+    // Normalize note to structured format (FIX #5)
+    // Handles legacy plain strings + new structured objects
+    let normalizedNote;
+    
+    if (typeof note === 'string') {
+      // Legacy plain string → convert to structured
+      normalizedNote = {
+        text: note,
+        author: "Unknown",
+        role: "system",
+        time: new Date().toISOString()
+      };
+    } else if (typeof note === 'object' && note !== null) {
+      // Already an object, ensure all fields exist
+      normalizedNote = {
+        text: note.text || String(note),
+        author: note.author || "Unknown",
+        role: note.role || "system",
+        time: note.time || new Date().toISOString(),
+        // Preserve any additional fields
+        ...note
+      };
+    } else {
+      // Fallback for any other type
+      normalizedNote = {
+        text: String(note),
+        author: "Unknown",
+        role: "system",
+        time: new Date().toISOString()
+      };
+    }
+    
+    notes.push(normalizedNote);
     updateCase(id, { notes });
   }
 
@@ -138,4 +170,3 @@ export function handleGetCasesForSupervisor(department) {
     ].includes(c.status)
   );
 }
-

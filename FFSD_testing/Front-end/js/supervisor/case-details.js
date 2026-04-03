@@ -5,8 +5,12 @@ import {
   priorityBadge, statusBadge, formatDate
 } from './supervisorData.js';
 import { populateSupervisorIdentity } from './sidebar-identity.js';
+import { createNotification } from '../../models/notificationModel.js';
 
 populateSupervisorIdentity();
+
+// Get current supervisor from session
+const currentSupervisor = JSON.parse(sessionStorage.getItem("ct_user")) || {};
 
 const params = new URLSearchParams(window.location.search);
 const caseId = params.get("id");
@@ -164,14 +168,29 @@ function renderNotes(c) {
   const notesList = document.getElementById("notes-list");
   if (!notesList) return;
   const notes = c.notes || [];
+  
   notesList.innerHTML = notes.length === 0
     ? `<p class="no-notes">No notes yet.</p>`
     : notes.map(n => {
-        const text = typeof n === "string" ? n : (n.text || JSON.stringify(n));
+        // Handle both string (legacy) and structured note objects
+        if (typeof n === "string") {
+          return `
+            <div class="note-item">
+              <div class="note-text">${n}</div>
+              <div class="note-meta">Supervisor · ${new Date().toLocaleDateString("en-GB")}</div>
+            </div>`;
+        }
+        
+        // Structured note object
+        const author = n.author || "Unknown";
+        const role = n.role || "supervisor";
+        const time = n.time ? new Date(n.time).toLocaleDateString("en-GB") : new Date().toLocaleDateString("en-GB");
+        const timeDetail = n.time ? new Date(n.time).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "";
+        
         return `
           <div class="note-item">
-            <div class="note-text">${text}</div>
-            <div class="note-meta">Supervisor · ${new Date().toLocaleDateString("en-GB")}</div>
+            <div class="note-text">${n.text}</div>
+            <div class="note-meta">${author} (${role}) · ${time}${timeDetail ? " · " + timeDetail : ""}</div>
           </div>`;
       }).join("");
 }
@@ -181,7 +200,34 @@ document.getElementById("add-note-btn")?.addEventListener("click", () => {
   const input = document.getElementById("note-input");
   const val   = input?.value.trim();
   if (!val) return;
-  addNoteToCase(caseId, val);
+  
+  // Create structured note object (FIX #1)
+  const note = {
+    text: val,
+    author: currentSupervisor.name || "Supervisor",
+    role: "supervisor",
+    time: new Date().toISOString()
+  };
+  
+  addNoteToCase(caseId, note);
+  
+  // Create notification for assigned officer (FIX #1)
+  const caseData = getCaseById(caseId);
+  if (caseData && caseData.assignedTo) {
+    try {
+      createNotification({
+        recipientId: caseData.assignedTo,
+        type: "note",
+        title: "New Note on Your Case",
+        message: `${currentSupervisor.name || "Supervisor"} added a note to case ${caseId}`,
+        caseId: caseId,
+        relatedUserId: currentSupervisor.id
+      });
+    } catch (e) {
+      console.log("Notification system not fully initialized, but note was saved");
+    }
+  }
+  
   input.value = "";
   renderNotes(getCaseById(caseId));
   toast("Note added successfully.");
