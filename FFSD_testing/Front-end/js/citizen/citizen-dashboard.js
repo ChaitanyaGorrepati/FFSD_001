@@ -1,6 +1,8 @@
 // js/citizen/citizen-dashboard.js
 
 import { fetchCases } from "../index.js";
+import { initNotifications } from "../../models/notificationModel.js";
+import { initNotificationUI } from "../notificationUI.js";
 
 // ── 1. Get session FIRST (must be before anything uses currentUser) ────────────
 const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
@@ -8,6 +10,10 @@ const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
 if (!currentUser || currentUser.role !== "citizen") {
   window.location.href = "../../login.html";
 }
+
+// ✨ ADD THESE 2 LINES RIGHT HERE:
+initNotifications();
+initNotificationUI(currentUser.id);
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 document.getElementById("logout-btn").addEventListener("click", (e) => {
