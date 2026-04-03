@@ -38,7 +38,7 @@ function updateClosureBadge(officerId) {
   if (el) el.textContent = count;
 }
 
-// ── Find supervisor by department (FIX #4) ────────────────────────────────────
+// ── Find supervisor by department ────────────────────────────────────────────
 function findSupervisorByDept(dept) {
   try {
     const users = getUsers();
@@ -110,40 +110,75 @@ function loadCase() {
   renderNotes(c.notes || []);
 }
 
+// ── Render Notes (IMPROVED UI) ──────────────────────────────────────────────
 function renderNotes(notes) {
   const list = document.getElementById("notes-list");
   if (!notes.length) {
-    list.innerHTML = `<p style="font-size:13px;color:var(--text-muted);">No notes yet.</p>`;
+    list.innerHTML = `<p style="font-size:13px;color:#999;font-style:italic;padding:12px 0;">No notes yet.</p>`;
     return;
   }
   
+  // Role color mapping (matching citizen view)
+  const roleColors = {
+    officer:    { bg: "#E8F5E9", border: "#4CAF50", badge: "#4CAF50", text: "#2E7D32" },
+    supervisor: { bg: "#F3E5F5", border: "#9C27B0", badge: "#9C27B0", text: "#6A1B9A" },
+    citizen:    { bg: "#E3F2FD", border: "#2196F3", badge: "#2196F3", text: "#1565C0" },
+    system:     { bg: "#F5F5F5", border: "#9E9E9E", badge: "#9E9E9E", text: "#616161" }
+  };
+  
   list.innerHTML = notes.map(n => {
-    // Handle legacy plain strings
+    let text, author, role, time, colors;
+    
     if (typeof n === "string") {
-      return `
-        <div style="background:var(--border-light);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;">
-          <p style="font-size:13.5px;color:var(--text-primary);line-height:1.6;">${n}</p>
-          <p style="font-size:11px;color:var(--text-muted);margin-top:4px;">Unknown</p>
-        </div>`;
+      // Legacy plain string
+      text = n;
+      author = "Unknown";
+      role = "system";
+      time = new Date().toLocaleDateString("en-GB");
+    } else {
+      // Structured note object
+      text = n.text || "";
+      author = n.author || n.by || "Unknown";
+      role = (n.role || "system").toLowerCase();
+      time = n.time ? formatDateTime(n.time) : new Date().toLocaleDateString("en-GB");
     }
     
-    // Structured note object (FIX #3)
-    const text = n.text || String(n);
-    const author = n.author || n.by || "Unknown";
-    const role = n.role || "system";
-    const ts = n.time || n.timestamp;
-    const formattedTime = ts ? formatDate(ts) + " · " + new Date(ts).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "";
+    colors = roleColors[role] || roleColors.system;
+    const isMe = author === user.name;
     
     return `
-      <div style="background:var(--border-light);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;">
+      <div style="
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        background: ${colors.bg};
+        border-left: 4px solid ${colors.border};
+        border-radius: 0 8px 8px 0;
+      ">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
-          <strong style="font-size:13px;color:var(--text-primary);">${author}</strong>
-          <span style="font-size:10px;background:#f0f0f0;color:#666;padding:2px 8px;border-radius:20px;text-transform:capitalize;">${role}</span>
-          ${formattedTime ? `<span style="font-size:11px;color:var(--text-muted);margin-left:auto;">${formattedTime}</span>` : ""}
+          <strong style="font-size:13px;color:#1a1a1a;">${author}</strong>
+          <span style="
+            font-size:11px;
+            font-weight:600;
+            background:${colors.badge}20;
+            color:${colors.badge};
+            padding:2px 8px;
+            border-radius:20px;
+            text-transform:capitalize;
+          ">${role}</span>
+          ${isMe ? `<span style="font-size:11px;color:${colors.badge};font-weight:600;">You</span>` : ""}
+          <span style="font-size:11px;color:#999;margin-left:auto;">${time}</span>
         </div>
-        <p style="font-size:13.5px;color:var(--text-primary);line-height:1.6;">${text}</p>
+        <p style="font-size:13px;color:#333;line-height:1.6;margin:0;">${text}</p>
       </div>`;
   }).join("");
+}
+
+function formatDateTime(iso) {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  const dateStr = date.toLocaleDateString("en-GB");
+  const timeStr = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return `${dateStr} · ${timeStr}`;
 }
 
 loadCase();
@@ -161,7 +196,7 @@ document.addEventListener("click", e => {
   if (action === "add-note")      addNote();
 });
 
-// ── Add Note (FIX #4: Add notification) ───────────────────────────────────────
+// ── Add Note ────────────────────────────────────────────────────────────────
 function addNote() {
   const input = document.getElementById("note-input");
   const text  = input.value.trim();
@@ -170,7 +205,7 @@ function addNote() {
   const c = getCaseById(caseId);
   if (!c) return;
   
-  // Create structured note object (FIX #3)
+  // Create structured note object
   const note = {
     text: text,
     author: user.name,
@@ -182,7 +217,7 @@ function addNote() {
   notes.push(note);
   updateCaseById(caseId, { notes });
   
-  // Create notification for supervisor (FIX #4)
+  // Create notification for supervisor
   if (c.department) {
     const supervisor = findSupervisorByDept(c.department);
     if (supervisor) {
@@ -335,7 +370,7 @@ function submitClosureRequest() {
       supervisorName: SUPERVISOR_NAMES[supId] || supId,
       summary,
       notes,
-      status:         "pending",         // supervisor will approve/reject
+      status:         "pending",
       requestedBy:    user.id,
       requestedByName: user.name,
       requestedAt:    new Date().toISOString(),
