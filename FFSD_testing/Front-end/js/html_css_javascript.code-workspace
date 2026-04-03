@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../html_css_javascript"
+		},
+		{
+			"path": "../../../.."
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "CM&IDC"
+	}
+}

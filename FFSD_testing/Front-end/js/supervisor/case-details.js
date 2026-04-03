@@ -30,6 +30,8 @@ function loadCase() {
   set("d-date",     formatDate(c.createdAt));
   html("d-priority", priorityBadge(c.priority));
   html("d-status",   statusBadge(c.status));
+  set("d-phone",  c.phone || "—");
+  
 
   // ── 2. Complaint Description + Attachments ────────────────────────────────
   set("d-description", c.description || "No description provided.");
@@ -62,6 +64,7 @@ function loadCase() {
   const estDate = new Date(c.assignedAt || c.createdAt);
   estDate.setDate(estDate.getDate() + 5);
   set("d-est-resolution", formatDate(estDate.toISOString()));
+  set("d-phone",           c.phone || "—");
 
   // ── 4. Case Activity ──────────────────────────────────────────────────────
   renderActivity(c);

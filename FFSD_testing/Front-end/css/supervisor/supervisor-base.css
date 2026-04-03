@@ -116,8 +116,7 @@ body {
 
 .topbar-right { display: flex; align-items: center; gap: 14px; }
 
-.notif-btn { background: none; border: none; cursor: pointer; position: relative; font-size: 18px; color: var(--gray-600); }
-.notif-dot { width: 8px; height: 8px; background: var(--red); border-radius: 50%; position: absolute; top: 0; right: 0; }
+/* Notification bell styles are in dashboard.css (bell exists only on dashboard) */
 
 .user-chip { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 500; }
 

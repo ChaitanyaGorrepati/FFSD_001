@@ -1,6 +1,8 @@
 // models/userModel.js
 import { users as mockUsers } from "../data/mockData.js";
 
+
+
 const USERS_KEY = "ct_users";
 
 // ── Seed localStorage with mock users on first load ───────────────────────────
