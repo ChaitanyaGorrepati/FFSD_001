@@ -155,17 +155,274 @@ body {
 
 .topbar-right { display: flex; align-items: center; gap: 14px; }
 
-.notif-btn {
-  background: none; border: none; cursor: pointer;
-  position: relative; font-size: 18px; color: var(--gray-600);
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATION BELL + PANEL  —  Dashboard page only
+   Bell exists ONLY in supervisor-dashboard.html
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Wrapper (position:relative anchor for dropdown) ── */
+.notif-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.notif-dot {
-  width: 8px; height: 8px;
-  background: var(--red);
-  border-radius: 50%;
-  position: absolute; top: 0; right: 0;
+/* ── Bell button ── */
+.notif-btn {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  color: var(--gray-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  transition: background .15s, color .15s;
 }
+.notif-btn:hover {
+  background: var(--gray-100);
+  color: var(--gray-800);
+}
+
+/* ── Numeric badge bubble ── */
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-body);
+  border-radius: 9px;
+  display: none;          /* shown by JS when count > 0 */
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+  border: 2px solid #fff;
+  pointer-events: none;
+}
+
+/* ── Notification panel dropdown ── */
+.notif-panel {
+  display: none;          /* toggled via .open class by JS */
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 360px;
+  max-height: 460px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  box-shadow:
+    0 4px 6px rgba(0,0,0,.04),
+    0 12px 40px rgba(0,0,0,.12);
+  z-index: 1000;
+  overflow: hidden;
+  flex-direction: column;
+  /* Animation handled via JS .open class */
+}
+.notif-panel.open {
+  display: flex;
+  animation: npDrop .18s ease;
+}
+@keyframes npDrop {
+  from { opacity: 0; transform: translateY(-8px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+/* ── Panel header ── */
+.np-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid var(--gray-100);
+  flex-shrink: 0;
+  background: #fff;
+}
+.np-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.np-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.np-title {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+.np-dept-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--blue-light);
+  color: var(--blue);
+  border-radius: 20px;
+  font-size: 10.5px;
+  font-weight: 600;
+}
+.np-unread-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--red);
+  background: var(--red-light);
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.np-clear-btn {
+  background: none;
+  border: none;
+  font-size: 11.5px;
+  color: var(--gray-400);
+  cursor: pointer;
+  font-family: var(--font-body);
+  padding: 3px 8px;
+  border-radius: 6px;
+  transition: color .15s, background .15s;
+  white-space: nowrap;
+}
+.np-clear-btn:hover {
+  color: var(--red);
+  background: var(--red-light);
+}
+
+/* ── Scrollable list ── */
+.np-list {
+  overflow-y: auto;
+  flex: 1;
+  max-height: 370px;
+}
+.np-list::-webkit-scrollbar { width: 4px; }
+.np-list::-webkit-scrollbar-thumb {
+  background: var(--gray-200);
+  border-radius: 4px;
+}
+
+/* ── Individual notification card ── */
+.np-item {
+  display: flex;
+  gap: 12px;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  transition: background .12s;
+  align-items: flex-start;
+  position: relative;
+  /* Color vars set inline from JS: --np-color, --np-light, --np-border */
+}
+.np-item:last-child { border-bottom: none; }
+.np-item:hover { background: var(--gray-50); }
+.np-item:focus { outline: 2px solid var(--blue); outline-offset: -2px; }
+
+/* Unread card has a subtle colored left border */
+.np-item.np-unread {
+  background: var(--np-light, #FFF6F6);
+  border-left: 3px solid var(--np-color, #E53935);
+  padding-left: 15px; /* compensate for border */
+}
+.np-item.np-unread:hover {
+  background: color-mix(in srgb, var(--np-light, #FFF6F6) 80%, #fff);
+}
+
+/* ── Icon bubble ── */
+.np-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--np-light, var(--gray-100));
+  border: 1.5px solid var(--np-border, var(--gray-200));
+  margin-top: 1px;
+}
+.np-icon { font-size: 16px; line-height: 1; }
+
+/* ── Text area ── */
+.np-body { flex: 1; min-width: 0; }
+
+.np-type-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--np-color, var(--gray-600));
+  margin-bottom: 2px;
+}
+.np-msg {
+  font-size: 13px;
+  color: var(--gray-800);
+  line-height: 1.5;
+  word-break: break-word;
+}
+.np-unread .np-msg { font-weight: 500; }
+
+.np-time {
+  font-size: 11px;
+  color: var(--gray-400);
+  margin-top: 4px;
+}
+
+/* Unread indicator dot (top-right corner of card) */
+.np-unread-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--np-color, var(--red));
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+/* ── Empty state ── */
+.np-empty {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--gray-600);
+}
+.np-empty-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+  opacity: .4;
+}
+.np-empty-text {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-800);
+  margin-bottom: 4px;
+}
+.np-empty-sub {
+  font-size: 12.5px;
+  color: var(--gray-400);
+  line-height: 1.5;
+}
+
+/* ── Footer ── */
+.np-footer {
+  padding: 10px 18px;
+  border-top: 1px solid var(--gray-100);
+  background: var(--gray-50);
+  flex-shrink: 0;
+}
+.np-total {
+  font-size: 11.5px;
+  color: var(--gray-400);
+}
+/* ═══ END NOTIFICATION BELL + PANEL ═══ */
 
 .user-chip {
   display: flex; align-items: center; gap: 8px;

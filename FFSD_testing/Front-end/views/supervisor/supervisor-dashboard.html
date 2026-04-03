@@ -46,7 +46,16 @@
       </p>
     </div>
     <div class="topbar-right">
-      <button class="notif-btn">🔔<span class="notif-dot"></span></button>
+      <div class="notif-wrapper" id="notif-wrapper">
+        <button class="notif-btn" id="notif-btn" aria-label="Notifications" title="Notifications">
+          🔔
+          <span class="notif-badge" id="notif-badge"></span>
+        </button>
+        <!-- Notification panel — injected and managed by supervisor-notifications.js -->
+        <div class="notif-panel" id="notif-panel" role="dialog" aria-label="Notifications panel">
+          <!-- populated by JS -->
+        </div>
+      </div>
       <div class="user-chip">
         <div class="user-avatar" id="topbar-avatar" style="width:28px;height:28px;font-size:11px;">?</div>
         <span id="topbar-name">Supervisor</span> ▾

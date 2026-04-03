@@ -9,6 +9,7 @@ import {
   statusBadge,
   formatDate
 } from './supervisorData.js';
+import { initNotifications } from './supervisor-notifications.js';
 
 // ── Guard ─────────────────────────────────────────────────────────────────────
 const supervisor = getLoggedInSupervisor();
@@ -29,6 +30,7 @@ function applyIdentity() {
   set("dept-label",     supervisor.department);
 }
 applyIdentity();
+initNotifications();
 
 // ── Month label ───────────────────────────────────────────────────────────────
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];

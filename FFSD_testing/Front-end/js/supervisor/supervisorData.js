@@ -108,6 +108,40 @@ export function pushNotification(toUserId, message, caseId) {
   } catch { /* silent */ }
 }
 
+/**
+ * Returns all notifications addressed to a specific user id, newest first.
+ * Used by supervisor pages to populate the bell dropdown.
+ */
+export function getNotificationsFor(userId) {
+  try {
+    const all = JSON.parse(localStorage.getItem("notifications") || "[]");
+    return all
+      .filter(n => n.to === userId)
+      .sort((a, b) => new Date(b.time) - new Date(a.time));
+  } catch { return []; }
+}
+
+/**
+ * Returns count of unread notifications for a user.
+ */
+export function getUnreadCount(userId) {
+  try {
+    const all = JSON.parse(localStorage.getItem("notifications") || "[]");
+    return all.filter(n => n.to === userId && !n.read).length;
+  } catch { return 0; }
+}
+
+/**
+ * Marks all notifications for a user as read.
+ */
+export function markAllRead(userId) {
+  try {
+    const all = JSON.parse(localStorage.getItem("notifications") || "[]");
+    const updated = all.map(n => n.to === userId ? { ...n, read: true } : n);
+    localStorage.setItem("notifications", JSON.stringify(updated));
+  } catch { /* silent */ }
+}
+
 // ── Transfer filtering ────────────────────────────────────────────────────────
 
 /**

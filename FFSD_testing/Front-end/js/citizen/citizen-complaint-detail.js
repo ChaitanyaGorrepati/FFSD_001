@@ -1,14 +1,19 @@
 // js/citizen/citizen-complaint-detail.js
 import { fetchCases, addNote, getUsers } from "../index.js";
+import { initNotifications } from "../../models/notificationModel.js";
+import { initNotificationUI } from "../notificationUI.js";
 
-
-// ── 1. Get session FIRST (must be before anything uses currentUser) ────────────
+// ── 1. Session guard ──────────────────────────────────────────────────────────
 const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
 
 if (!currentUser || currentUser.role !== "citizen") {
   window.location.href = "../../login.html";
 }
 
+// ── 2. Init notifications ─────────────────────────────────────────────────────
+initNotifications();
+
+// ── 3. Logout ─────────────────────────────────────────────────────────────────
 document.getElementById("logout-btn").addEventListener("click", (e) => {
   e.preventDefault();
   sessionStorage.removeItem("ct_user");
@@ -16,9 +21,8 @@ document.getElementById("logout-btn").addEventListener("click", (e) => {
   window.location.href = "../login.html";
 });
 
-// ── 2. Update name & avatar ───────────────────────────────────────────────────
+// ── 4. Name & avatar ──────────────────────────────────────────────────────────
 const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
- 
 document.getElementById("sidebarUserName").textContent = currentUser.name;
 document.getElementById("topbarUserName").textContent  = currentUser.name;
 document.querySelectorAll(".avatar").forEach(el => el.textContent = initials);
@@ -49,15 +53,20 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function formatDateTime(iso) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("en-US", {
+    month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+  });
+}
+
 function getIdFromURL() {
   return new URLSearchParams(window.location.search).get("id");
 }
 
 function renderStepper(status) {
   const steps = document.querySelectorAll(".step");
-  const currentIdx = STATUS_ORDER.indexOf(status);
-  const effectiveIdx = Math.max(currentIdx, 0);
-
+  const effectiveIdx = Math.max(STATUS_ORDER.indexOf(status), 0);
   steps.forEach((step, i) => {
     step.classList.remove("done", "active");
     if (i < effectiveIdx) step.classList.add("done");
@@ -65,6 +74,7 @@ function renderStepper(status) {
   });
 }
 
+// ── Notes: supports legacy plain strings + structured objects ─────────────────
 function renderNotes(notes) {
   const list  = document.getElementById("notesList");
   const count = document.getElementById("notesCount");
@@ -75,15 +85,51 @@ function renderNotes(notes) {
     return;
   }
 
-  list.innerHTML = notes.map(n => `
-    <div class="note-item">${typeof n === "object" ? n.text || n : n}</div>
-  `).join("");
+  const roleColors = {
+    citizen:    { bg: "#EFF6FF", text: "#3B82F6" },
+    officer:    { bg: "#ECFDF5", text: "#10B981" },
+    supervisor: { bg: "#F5F3FF", text: "#8B5CF6" },
+    superuser:  { bg: "#FFFBEB", text: "#F59E0B" },
+  };
+
+  list.innerHTML = notes.map(n => {
+    // Legacy plain string
+    if (typeof n === "string") {
+      return `<div style="padding:10px 12px;background:#F8FAFC;border-radius:8px;margin-bottom:8px;">
+        <div style="font-size:11px;color:#94A3B8;margin-bottom:4px;">Unknown</div>
+        <div style="font-size:13px;color:#475569;">${n}</div>
+      </div>`;
+    }
+
+    const author = n.author || "Unknown";
+    const role   = (n.role || "").toLowerCase();
+    const time   = n.time ? formatDateTime(n.time) : "";
+    const colors = roleColors[role] || { bg: "#F8FAFC", text: "#64748B" };
+    const isMe   = author === currentUser.name;
+
+    return `<div style="
+        padding:10px 12px;
+        background:${isMe ? "#F0F9FF" : "#F8FAFC"};
+        border-left:3px solid ${colors.text};
+        border-radius:0 8px 8px 0;
+        margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap;">
+        <span style="font-weight:600;font-size:13px;color:#0F172A;">${author}</span>
+        <span style="background:${colors.bg};color:${colors.text};font-size:10px;font-weight:600;
+                     padding:1px 8px;border-radius:20px;text-transform:capitalize;">
+          ${role || "user"}
+        </span>
+        ${isMe ? `<span style="font-size:10px;color:#3B82F6;font-weight:600;">You</span>` : ""}
+        ${time ? `<span style="font-size:11px;color:#94A3B8;margin-left:auto;">${time}</span>` : ""}
+      </div>
+      <div style="font-size:13px;color:#475569;line-height:1.5;">${n.text}</div>
+    </div>`;
+  }).join("");
 }
 
 function findOfficer(officerId) {
-  try {
-    return getUsers().find(u => u.id === officerId) || null;
-  } catch { return null; }
+  try { return getUsers().find(u => u.id === officerId) || null; }
+  catch { return null; }
 }
 
 function renderCase(c) {
@@ -92,11 +138,9 @@ function renderCase(c) {
   document.title = `${c.id} – CivicTrack`;
 
   renderStepper(c.status);
-
   document.getElementById("caseTitle").textContent       = c.title || "—";
   document.getElementById("caseDescription").textContent = c.description || "No description provided.";
   document.getElementById("caseLocation").textContent    = c.location || "Location not specified";
-
   renderNotes(Array.isArray(c.notes) ? c.notes : []);
 
   document.getElementById("infoCaseId").textContent    = c.id;
@@ -119,13 +163,13 @@ function renderCase(c) {
   }
 
   if (c.transfer?.requested && c.transfer?.status === "pending") {
-    const card = document.getElementById("transferCard");
-    card.style.display = "block";
+    document.getElementById("transferCard").style.display = "block";
     document.getElementById("transferBody").textContent =
       `Transfer to ${c.transfer.toDept || "another department"} is pending review.`;
   }
 }
 
+// ── Note form: saves structured { text, author, role, time } ─────────────────
 function setupNoteForm(caseId) {
   const toggle    = document.getElementById("addNoteToggle");
   const form      = document.getElementById("addNoteForm");
@@ -135,7 +179,7 @@ function setupNoteForm(caseId) {
   const submitBtn = document.getElementById("submitNoteBtn");
 
   toggle.addEventListener("click", () => {
-    form.style.display  = "block";
+    form.style.display   = "block";
     toggle.style.display = "none";
     input.focus();
   });
@@ -152,12 +196,20 @@ function setupNoteForm(caseId) {
     if (!text) { errorEl.textContent = "Note cannot be empty."; return; }
     errorEl.textContent = "";
 
-    const result = addNote(caseId, text);
+    const note = {
+      text,
+      author: currentUser.name,
+      role:   currentUser.role,
+      time:   new Date().toISOString()
+    };
+
+    const result = addNote(caseId, note);
     if (result?.success) {
       input.value = "";
       form.style.display   = "none";
       toggle.style.display = "inline-flex";
 
+      // Re-render notes from fresh data
       const cases   = fetchCases();
       const updated = cases.find(c => c.id === caseId);
       if (updated) renderNotes(Array.isArray(updated.notes) ? updated.notes : []);
@@ -176,9 +228,9 @@ function init() {
   }
 
   try {
-    const cases = fetchCases();
-    // Security: only allow viewing own cases
-    const c = cases.find(x => x.id === id && x.submittedBy === currentUser.id);
+    const cases   = fetchCases();
+    const myCases = cases.filter(c => c.submittedBy === currentUser.id);
+    const c       = myCases.find(x => x.id === id);
 
     if (!c) {
       document.querySelector(".content").innerHTML =
@@ -188,6 +240,9 @@ function init() {
 
     renderCase(c);
     setupNoteForm(id);
+
+    // Init notification bell (syncs + wires button)
+    initNotificationUI(currentUser.id);
   } catch (err) {
     console.error("Complaint detail error:", err);
   }

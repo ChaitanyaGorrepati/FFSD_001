@@ -1,15 +1,20 @@
 // js/citizen/citizen-dashboard.js
-
 import { fetchCases } from "../index.js";
+import { initNotifications } from "../../models/notificationModel.js";
+import { initNotificationUI } from "../notificationUI.js";
 
-// ── 1. Get session FIRST (must be before anything uses currentUser) ────────────
+// ── 1. Session guard ──────────────────────────────────────────────────────────
 const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
 
 if (!currentUser || currentUser.role !== "citizen") {
   window.location.href = "../../login.html";
 }
 
-// ── Logout ────────────────────────────────────────────────────────────────────
+// ── 2. Init notifications ─────────────────────────────────────────────────────
+initNotifications();
+initNotificationUI(currentUser.id);
+
+// ── 3. Logout ─────────────────────────────────────────────────────────────────
 document.getElementById("logout-btn").addEventListener("click", (e) => {
   e.preventDefault();
   sessionStorage.removeItem("ct_user");
@@ -17,9 +22,8 @@ document.getElementById("logout-btn").addEventListener("click", (e) => {
   window.location.href = "../login.html";
 });
 
-// ── 2. Update name & avatar ───────────────────────────────────────────────────
+// ── 4. Name & avatar ──────────────────────────────────────────────────────────
 const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
- 
 document.getElementById("sidebarUserName").textContent = currentUser.name;
 document.getElementById("topbarUserName").textContent  = currentUser.name;
 document.querySelectorAll(".avatar").forEach(el => el.textContent = initials);
@@ -48,7 +52,6 @@ function showAlert(msg) {
   banner.style.display = "flex";
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
 function renderStats(cases) {
   document.getElementById("statTotal").textContent    = cases.length;
   document.getElementById("statOpen").textContent     = cases.filter(c => c.status === "Assigned").length;
@@ -63,12 +66,10 @@ function renderStats(cases) {
 
 function renderTable(cases) {
   const tbody = document.getElementById("recentTableBody");
-
   if (!cases.length) {
     tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No complaints found. <a href="citizen-submit-complaint.html" style="color:var(--red)">Submit one now →</a></td></tr>`;
     return;
   }
-
   const recent = cases.slice(-5).reverse();
   tbody.innerHTML = recent.map(c => `
     <tr>
@@ -78,23 +79,17 @@ function renderTable(cases) {
       <td>${c.zone || "—"}</td>
       <td>${getStatusBadge(c.status)}</td>
       <td class="text-muted text-sm">${formatDate(c.createdAt)}</td>
-      <td>
-        <a href="citizen-complaint-detail.html?id=${c.id}" class="btn btn-outline btn-xs">View</a>
-      </td>
+      <td><a href="citizen-complaint-detail.html?id=${c.id}" class="btn btn-outline btn-xs">View</a></td>
     </tr>
   `).join("");
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────────
 function init() {
   try {
-    // Filter cases to only this citizen's submissions
     const allCases = fetchCases();
     const myCases  = allCases.filter(c => c.submittedBy === currentUser.id);
-
     renderStats(myCases);
     renderTable(myCases);
-
     const hasPending = myCases.some(c => c.transfer?.status === "pending");
     if (hasPending) showAlert("One or more of your cases have a pending transfer request.");
   } catch (err) {

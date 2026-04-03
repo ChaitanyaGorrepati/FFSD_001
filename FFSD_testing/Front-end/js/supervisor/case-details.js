@@ -5,8 +5,12 @@ import {
   priorityBadge, statusBadge, formatDate
 } from './supervisorData.js';
 import { populateSupervisorIdentity } from './sidebar-identity.js';
+import { createNotification } from '../../models/notificationModel.js';
 
 populateSupervisorIdentity();
+
+// Get current supervisor from session
+const currentSupervisor = JSON.parse(sessionStorage.getItem("ct_user")) || {};
 
 const params = new URLSearchParams(window.location.search);
 const caseId = params.get("id");
@@ -30,6 +34,8 @@ function loadCase() {
   set("d-date",     formatDate(c.createdAt));
   html("d-priority", priorityBadge(c.priority));
   html("d-status",   statusBadge(c.status));
+  set("d-phone",  c.phone || "—");
+  
 
   // ── 2. Complaint Description + Attachments ────────────────────────────────
   set("d-description", c.description || "No description provided.");
@@ -62,6 +68,7 @@ function loadCase() {
   const estDate = new Date(c.assignedAt || c.createdAt);
   estDate.setDate(estDate.getDate() + 5);
   set("d-est-resolution", formatDate(estDate.toISOString()));
+  set("d-phone",           c.phone || "—");
 
   // ── 4. Case Activity ──────────────────────────────────────────────────────
   renderActivity(c);
@@ -89,9 +96,9 @@ function renderActivity(c) {
     note:                { icon: "💬", color: "#5F6368" },
     resolved:            { icon: "✔️", color: "#2E7D32" },
     closed:              { icon: "🔒", color: "#5F6368" },
-    supervisor_closed:   { icon: "🔒", color: "#2E7D32" },   // ← supervisor approved closure
-    supervisor_rejected: { icon: "🚫", color: "#E53935" },   // ← supervisor rejected closure
-    reassigned:          { icon: "🔁", color: "#6A1B9A" },   // ← case reassigned
+    supervisor_closed:   { icon: "🔒", color: "#2E7D32" },
+    supervisor_rejected: { icon: "🚫", color: "#E53935" },
+    reassigned:          { icon: "🔁", color: "#6A1B9A" },
   };
 
   list.innerHTML = activity.map((ev, i) => {
@@ -159,21 +166,78 @@ function deriveActivity(c) {
   return events;
 }
 
-// ── Notes ─────────────────────────────────────────────────────────────────────
+// ── Notes (IMPROVED UI) ──────────────────────────────────────────────────────
 function renderNotes(c) {
   const notesList = document.getElementById("notes-list");
   if (!notesList) return;
   const notes = c.notes || [];
-  notesList.innerHTML = notes.length === 0
-    ? `<p class="no-notes">No notes yet.</p>`
-    : notes.map(n => {
-        const text = typeof n === "string" ? n : (n.text || JSON.stringify(n));
-        return `
-          <div class="note-item">
-            <div class="note-text">${text}</div>
-            <div class="note-meta">Supervisor · ${new Date().toLocaleDateString("en-GB")}</div>
-          </div>`;
-      }).join("");
+  
+  if (notes.length === 0) {
+    notesList.innerHTML = `<p style="font-size:13px;color:var(--gray-400);font-style:italic;padding:12px 0;">No notes yet.</p>`;
+    return;
+  }
+  
+  // Role color mapping
+  const roleColors = {
+    officer:    { bg: "#E8F5E9", border: "#4CAF50", badge: "#4CAF50", text: "#2E7D32" },
+    supervisor: { bg: "#F3E5F5", border: "#9C27B0", badge: "#9C27B0", text: "#6A1B9A" },
+    citizen:    { bg: "#E3F2FD", border: "#2196F3", badge: "#2196F3", text: "#1565C0" },
+    system:     { bg: "#F5F5F5", border: "#9E9E9E", badge: "#9E9E9E", text: "#616161" }
+  };
+  
+  notesList.innerHTML = notes.map(n => {
+    let text, author, role, time, colors;
+    
+    if (typeof n === "string") {
+      // Legacy plain string
+      text = n;
+      author = "Supervisor";
+      role = "supervisor";
+      time = new Date().toLocaleDateString("en-GB");
+    } else {
+      // Structured note object
+      text = n.text || "";
+      author = n.author || "Unknown";
+      role = (n.role || "system").toLowerCase();
+      time = n.time ? formatDateTime(n.time) : new Date().toLocaleDateString("en-GB");
+    }
+    
+    colors = roleColors[role] || roleColors.system;
+    const isMe = author === currentSupervisor.name;
+    
+    return `
+      <div style="
+        margin-bottom: 12px;
+        padding: 12px 14px;
+        background: ${colors.bg};
+        border-left: 4px solid ${colors.border};
+        border-radius: 0 8px 8px 0;
+      ">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+          <strong style="font-size:13px;color:#1a1a1a;">${author}</strong>
+          <span style="
+            font-size:11px;
+            font-weight:600;
+            background:${colors.badge}20;
+            color:${colors.badge};
+            padding:2px 8px;
+            border-radius:20px;
+            text-transform:capitalize;
+          ">${role}</span>
+          ${isMe ? `<span style="font-size:11px;color:${colors.badge};font-weight:600;">You</span>` : ""}
+          <span style="font-size:11px;color:var(--gray-400);margin-left:auto;">${time}</span>
+        </div>
+        <p style="font-size:13px;color:#333;line-height:1.6;margin:0;">${text}</p>
+      </div>`;
+  }).join("");
+}
+
+function formatDateTime(iso) {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  const dateStr = date.toLocaleDateString("en-GB");
+  const timeStr = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return `${dateStr} · ${timeStr}`;
 }
 
 // ── Add note ──────────────────────────────────────────────────────────────────
@@ -181,7 +245,34 @@ document.getElementById("add-note-btn")?.addEventListener("click", () => {
   const input = document.getElementById("note-input");
   const val   = input?.value.trim();
   if (!val) return;
-  addNoteToCase(caseId, val);
+  
+  // Create structured note object
+  const note = {
+    text: val,
+    author: currentSupervisor.name || "Supervisor",
+    role: "supervisor",
+    time: new Date().toISOString()
+  };
+  
+  addNoteToCase(caseId, note);
+  
+  // Create notification for assigned officer
+  const caseData = getCaseById(caseId);
+  if (caseData && caseData.assignedTo) {
+    try {
+      createNotification({
+        recipientId: caseData.assignedTo,
+        type: "note",
+        title: "New Note on Your Case",
+        message: `${currentSupervisor.name || "Supervisor"} added a note to case ${caseId}`,
+        caseId: caseId,
+        relatedUserId: currentSupervisor.id
+      });
+    } catch (e) {
+      console.log("Notification system not fully initialized, but note was saved");
+    }
+  }
+  
   input.value = "";
   renderNotes(getCaseById(caseId));
   toast("Note added successfully.");
