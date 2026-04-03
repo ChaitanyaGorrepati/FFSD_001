@@ -37,6 +37,11 @@
           Transfer Requests
           <span class="badge-count" id="sb-transfer-count">0</span>
         </a>
+        <a href="officer-closure-requests.html">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Closure Requests
+          <span class="badge-count" id="sb-closure-count">0</span>
+        </a>
       </nav>
     </div>
 
@@ -73,16 +78,13 @@
         <span class="crumb-active">Dashboard</span>
       </div>
       <div class="topbar-right">
-        <!-- ▼ ADDED: notification bell button + dropdown panel -->
         <div style="position:relative;">
           <button id="notif-btn" style="position:relative;background:none;border:none;cursor:pointer;padding:6px;border-radius:8px;display:flex;align-items:center;color:var(--text-secondary);" title="Notifications">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <span id="notif-count" style="display:none;position:absolute;top:2px;right:2px;background:#E53935;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;padding:0 4px;align-items:center;justify-content:center;line-height:16px;text-align:center;">0</span>
           </button>
-          <!-- Notification dropdown panel -->
           <div id="notif-panel" style="display:none;position:absolute;top:calc(100% + 8px);right:0;width:320px;max-height:400px;overflow-y:auto;background:#fff;border:1px solid #E8EAED;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.12);z-index:500;"></div>
         </div>
-        <!-- ▲ END ADDED -->
         <div class="topbar-user">
           <div class="avatar sm" id="topbar-avatar">?</div>
           <span class="name" id="topbar-name">Loading…</span>

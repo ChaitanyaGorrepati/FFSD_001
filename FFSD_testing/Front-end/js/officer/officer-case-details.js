@@ -10,7 +10,7 @@ const user = getOfficerSession();
 if (!user) throw new Error("No session");
 
 initOfficerUI(user);
-updateSidebarBadges(user.id);
+updateSidebarBadges(user.id, user.name);
 updateClosureBadge(user.id);
 
 document.getElementById("logout-btn").addEventListener("click", () => {
@@ -27,11 +27,14 @@ if (!caseId) { window.location.href = "officer-assigned-cases.html"; }
 // ── Closure badge helper (sidebar) ────────────────────────────────────────────
 function updateClosureBadge(officerId) {
   const all = JSON.parse(localStorage.getItem("cases") || "[]");
+
   const count = all.filter(c =>
     c.assignedTo === officerId &&
     c.closureRequest &&
-    c.closureRequest.requested
+    c.closureRequest.requested &&
+    c.closureRequest.status === "pending"   
   ).length;
+
   const el = document.getElementById("sb-closure-count");
   if (el) el.textContent = count;
 }
@@ -56,6 +59,8 @@ function loadCase() {
   document.getElementById("detail-date").textContent      = formatDate(c.createdAt);
   document.getElementById("detail-location").textContent  = c.location || "—";
   document.getElementById("detail-description").textContent = c.description || "—";
+  document.getElementById("detail-phone").textContent = c.phone || "—";
+
 
   // Badges — replace the placeholder spans safely
   const statusEl   = document.getElementById("detail-status-badge");
@@ -67,8 +72,9 @@ function loadCase() {
 
   // Right panel
   document.getElementById("info-submitted-by").textContent = c.submittedBy || "Citizen";
-  document.getElementById("info-contact").textContent      =
-    c.contactPhone || c.contactEmail || "—";
+  // Show phone from whichever key the citizen form used
+  const phone = c.contactPhone || c.phone || c.contact || c.contactEmail || "—";
+  document.getElementById("info-contact").textContent = phone;
   document.getElementById("info-status").innerHTML   = statusBadge(c.status);
   document.getElementById("info-priority").innerHTML = priorityBadge(c.priority || "Medium");
 
@@ -218,6 +224,7 @@ const SUPERVISOR_NAMES = {
   sup1: "Sara (Road)",
   sup2: "David (Water)",
   sup3: "Kiran (Electricity)",
+  sup4: "Kishore (Sanitation)",
 };
 
 function openClosureModal() {
@@ -236,7 +243,7 @@ function openClosureModal() {
   document.getElementById("crm-supervisor-error").style.display = "none";
 
   // Auto-select matching supervisor by department
-  const deptSupMap = { Road: "sup1", Water: "sup2", Electricity: "sup3" };
+  const deptSupMap = { Road: "sup1", Water: "sup2", Electricity: "sup3", Sanitation: "sup4" };
   const autoSup = deptSupMap[c.department];
   if (autoSup) document.getElementById("crm-supervisor").value = autoSup;
 
