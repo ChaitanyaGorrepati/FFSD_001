@@ -160,16 +160,11 @@ document.getElementById("save-profile-btn")?.addEventListener("click", () => {
   const bio        = document.getElementById("profile-bio").value;
 
   if (!firstName || !email) {
-    showStatus("profile-save-status", "First name and email are required.", true);
+    showStatus("profile-save-status", "First name and username are required.", true);
     return;
   }
 
-  // 🚨 MAIN FIX
-  if (!emailEl.checkValidity()) {
-    showStatus("profile-save-status", "Enter a valid email address.", true);
-    emailEl.style.borderColor = "red";
-    return;
-  }
+ 
 
   if (phone && phone.length !== 10) {
     showStatus("profile-save-status", "Phone must be 10 digits.", true);

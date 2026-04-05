@@ -87,16 +87,12 @@ document.getElementById("save-profile-btn")?.addEventListener("click", () => {
 
   // ✅ Required validation
   if (!firstName || !email) {
-    showStatus("profile-save-status", "First name and email are required.", true);
+    showStatus("profile-save-status", "First name and username are required.", true);
     return;
   }
 
-  // ✅ Email validation (MAIN FIX)
-  if (!emailEl.checkValidity()) {
-    showStatus("profile-save-status", "Enter a valid email address.", true);
-    emailEl.style.borderColor = "red";
-    return; // 🚨 stops saving
-  }
+
+
 
   // ✅ Phone validation (optional but good)
   if (phone && phone.length !== 10) {
