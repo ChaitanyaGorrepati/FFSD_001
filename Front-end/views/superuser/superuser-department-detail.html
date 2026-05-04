@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CivicTrack – Department Detail</title>
+  <link rel="stylesheet" href="../../css/global.css" />
+  <link rel="stylesheet" href="../../css/superuser/superuser-department-detail.css" />
+</head>
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar">
+      <a href="superuser-dashboard.html" class="sidebar-logo">
+        <div class="logo-icon">CT</div>
+        <span class="logo-name">CivicTrack</span>
+      </a>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Overview</div>
+        <nav class="sidebar-nav">
+          <a href="superuser-dashboard.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            Dashboard
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Management</div>
+        <nav class="sidebar-nav">
+          <a href="superuser-users.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Users
+          </a>
+          <a href="superuser-departments.html" class="active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Departments
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-section-label">Cases</div>
+        <nav class="sidebar-nav">
+          <a href="superuser-cases.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            All Cases
+          </a>
+        </nav>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="#" id="logout-btn" onclick="sessionStorage.clear();window.location.href='../role-selection.html';return false;" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text-muted,#888);text-decoration:none;font-size:0.85rem;margin-bottom:8px;transition:background 0.15s;" onmouseover="this.style.background='rgba(220,38,38,0.08)';this.style.color='#dc2626';" onmouseout="this.style.background='';this.style.color='var(--text-muted,#888)';">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Logout
+        </a>
+        <div class="sidebar-user">
+          <div class="avatar" id="su-avatar">SU</div>
+          <div class="sidebar-user-info">
+            <div class="name" id="su-name">Super User</div>
+            <div class="role">System Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar-breadcrumb">
+          <span>CivicTrack</span>
+          <span class="sep">›</span>
+          <a href="superuser-dashboard.html">Admin</a>
+          <span class="sep">›</span>
+          <a href="superuser-departments.html">Departments</a>
+          <span class="sep">›</span>
+          <span class="crumb-active" id="breadcrumb-dept">—</span>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-user">
+            <div class="avatar sm" id="su-topbar-avatar">SU</div>
+            <span class="name" id="su-topbar-name">Super User</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="dept-header-left">
+            <a href="superuser-departments.html" class="back-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+              Back
+            </a>
+            <div>
+              <div class="dept-title-row">
+                <div class="dept-icon" id="dept-icon">W</div>
+                <div class="page-title" id="page-dept-name">Department</div>
+              </div>
+              <div class="page-subtitle" id="page-dept-subtitle">Loading department details…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="detail-stats">
+          <div class="detail-stat-card">
+            <div class="detail-stat-icon supervisor-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <div class="detail-stat-value" id="stat-supervisors">0</div>
+              <div class="detail-stat-label">Supervisors</div>
+            </div>
+          </div>
+          <div class="detail-stat-card">
+            <div class="detail-stat-icon officer-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="detail-stat-value" id="stat-officers">0</div>
+              <div class="detail-stat-label">Officers</div>
+            </div>
+          </div>
+          <div class="detail-stat-card">
+            <div class="detail-stat-icon category-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M4 6h16M4 10h16M4 14h10"/></svg>
+            </div>
+            <div>
+              <div class="detail-stat-value" id="stat-categories">0</div>
+              <div class="detail-stat-label">Categories</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories row -->
+        <div class="card categories-card" id="categories-section">
+          <div class="card-header">
+            <div class="card-title">Complaint Categories</div>
+          </div>
+          <div class="categories-list" id="categories-list">
+            <span class="text-muted text-sm">No categories configured.</span>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="detail-tabs" id="detail-tabs">
+          <button class="detail-tab active" data-tab="supervisors">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Supervisors
+            <span class="tab-count" id="tab-count-supervisors">0</span>
+          </button>
+          <button class="detail-tab" data-tab="officers">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Officers
+            <span class="tab-count" id="tab-count-officers">0</span>
+          </button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="tab-panel active" id="panel-supervisors">
+          <div class="card">
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Zone</th>
+                    <th>Role</th>
+                  </tr>
+                </thead>
+                <tbody id="supervisors-tbody">
+                  <tr><td colspan="3" class="empty-state">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-officers">
+          <div class="card">
+            <div class="table-wrapper">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Zone</th>
+                    <th>Role</th>
+                  </tr>
+                </thead>
+                <tbody id="officers-tbody">
+                  <tr><td colspan="3" class="empty-state">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const u = JSON.parse(sessionStorage.getItem("ct_user") || "null");
+      if (!u) return;
+      const initials = u.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      ["su-avatar", "su-topbar-avatar"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = initials;
+      });
+      ["su-name", "su-topbar-name"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = u.name;
+      });
+    })();
+  </script>
+
+  <script type="module" src="../../js/main.js"></script>
+  <script type="module" src="../../js/superuser/superuser-department-detail.js"></script>
+</body>
+</html>
