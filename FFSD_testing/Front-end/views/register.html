@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CivicTrack — Create Account</title>
+  <link rel="stylesheet" href="../css/auth.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Epilogue:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="ambient ambient-1"></div>
+  <div class="ambient ambient-2"></div>
+
+  <div class="shell">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+      <div class="brand">
+        <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="8" fill="#e63946" opacity="0.15"/>
+          <path d="M8 18h20M18 8v20M11 11l14 14M25 11L11 25" stroke="#e63946" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="18" cy="18" r="4" fill="#e63946"/>
+        </svg>
+        <div>
+          <div class="brand-name">CivicTrack</div>
+          <div class="brand-tag">MUNICIPAL SYSTEM</div>
+        </div>
+      </div>
+
+      <div class="left-hero">
+        <div class="eyebrow">CITIZEN PORTAL</div>
+        <h1 class="left-title">
+          Join.<br>
+          <em>Report.</em><br>
+          Track.
+        </h1>
+        <p class="left-body">
+          Create your citizen account to submit complaints, track resolutions,
+          and engage with your local municipal services — all in one place.
+        </p>
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-num">24<span>k</span></div>
+            <div class="stat-label">ACTIVE CASES</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">98<span>%</span></div>
+            <div class="stat-label">UPTIME SLA</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">4<span>.1h</span></div>
+            <div class="stat-label">AVG RESPONSE</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider-h"></div>
+
+      <div class="status-bar">
+        <div class="status-dot"></div>
+        <span>ALL SYSTEMS OPERATIONAL</span>
+        <span style="margin-left:auto">SEC-LEVEL: STANDARD</span>
+      </div>
+
+      <div class="vertical-label">CIVICTRACK CITIZEN REGISTRATION — 2025</div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <svg class="corner-deco" width="80" height="80" viewBox="0 0 80 80" fill="none">
+        <path d="M0 0 L80 0 L80 80" stroke="#e63946" stroke-width="1.5" fill="none"/>
+        <circle cx="80" cy="0" r="3" fill="#e63946"/>
+      </svg>
+
+      <div class="auth-box">
+
+        <div class="auth-nav">
+          <div class="nav-breadcrumb">ACCESS / <span>REGISTER</span></div>
+          <a href="login.html" class="back-btn">← BACK TO LOGIN</a>
+        </div>
+
+        <div class="section-label">CITIZEN REGISTRATION</div>
+        <h2 class="auth-title">Create your<br>account.</h2>
+        <p class="auth-sub">Register to submit and track complaints</p>
+
+        <!-- Success banner -->
+        <div id="successBanner" class="success-banner hidden">
+          ✓ Account created!
+          <a href="login.html" class="success-link">Login now →</a>
+        </div>
+
+        <div class="form-group">
+          <label for="fullname">Full Name</label>
+          <div class="input-wrap">
+            <span class="input-icon">🪪</span>
+            <input type="text" id="fullname" placeholder="Your full name" autocomplete="off" />
+          </div>
+          <p id="fullname-error" class="field-error hidden"></p>
+        </div>
+
+        <!-- Username -->
+
+<!-- Phone Number (ADD THIS) -->
+<div class="form-group">
+  <label for="phone">Phone Number</label>
+  <div class="input-wrap">
+    <span class="input-icon">📱</span>
+    <input type="tel" id="phone" placeholder="10-digit number" maxlength="10" />
+  </div>
+  <p id="phone-error" class="field-error hidden"></p>
+</div>
+
+<!-- Password -->
+
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" placeholder="Create a password" />
+          </div>
+          <p id="password-error" class="field-error hidden"></p>
+        </div>
+
+        <button class="btn-primary" id="register-btn">
+          Create Account
+          <svg class="btn-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <p class="auth-note">
+          Officers and Supervisors cannot self-register.<br>
+          Contact your Super User for access.
+        </p>
+
+      </div>
+    </div>
+
+  </div>
+
+  <script type="module" src="../js/create-account.js"></script>
+</body>
+</html>

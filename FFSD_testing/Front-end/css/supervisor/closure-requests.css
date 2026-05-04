@@ -1,0 +1,19 @@
+/* closure-requests.css */
+@import 'supervisor-base.css';
+
+.resolution-text { font-size: 12.5px; color: var(--gray-600); font-style: italic; }
+
+.closure-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+.btn-sm {
+  padding: 5px 12px; font-size: 12px;
+  border-radius: 6px; font-weight: 600;
+  cursor: pointer; font-family: var(--font-body);
+  border: none; transition: background .15s; white-space: nowrap;
+}
+.btn-approve { background: var(--green); color: #fff; }
+.btn-approve:hover { background: #1B5E20; }
+.btn-reject { background: var(--red-light); color: var(--red); border: 1.5px solid var(--red-mid); }
+.btn-reject:hover { background: var(--red); color: #fff; }
+.btn-view { background: #fff; color: var(--gray-800); border: 1.5px solid var(--gray-200); text-decoration: none; display: inline-flex; align-items: center; }
+.btn-view:hover { background: var(--gray-100); }

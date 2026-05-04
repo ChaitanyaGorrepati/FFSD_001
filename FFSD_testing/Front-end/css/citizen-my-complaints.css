@@ -1,0 +1,59 @@
+/* ============================================================
+   CivicTrack – My Complaints
+   css/citizen-my-complaints.css
+   ============================================================ */
+
+.complaints-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 7px 12px;
+  min-width: 220px;
+  transition: border-color .15s;
+}
+
+.search-box:focus-within {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(239,68,68,.08);
+}
+
+.search-box svg { color: var(--text-muted); flex-shrink: 0; }
+
+.search-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  width: 100%;
+}
+
+.search-input::placeholder { color: var(--text-muted); }
+
+/* Table adjustments */
+.table td .case-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.table td .title-wrap {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.table td .date-col { color: var(--text-secondary); font-size: 13px; }

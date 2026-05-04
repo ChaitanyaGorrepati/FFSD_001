@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CivicTrack – Case Details</title>
+  <link rel="stylesheet" href="../../css/supervisor/case-details.css"/>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">CT</div>
+    <span class="logo-name">CivicTrack</span>
+  </div>
+  <div class="sidebar-section">Overview</div>
+  <a href="supervisor-dashboard.html" class="nav-item"><span class="nav-icon">🏠</span> Dashboard</a>
+  <div class="sidebar-section">Case Management</div>
+  <a href="supervisor-department-cases.html" class="nav-item"><span class="nav-icon">📁</span> Department Cases</a>
+  <a href="supervisor-accept-transfers.html" class="nav-item"><span class="nav-icon">✅</span> Accept Transfers</a>
+  <a href="supervisor-transfer-requests.html" class="nav-item"><span class="nav-icon">↔️</span> Transfer Requests</a>
+  <a href="supervisor-delayed-cases.html" class="nav-item"><span class="nav-icon">⏰</span> Delayed Cases</a>
+  <a href="supervisor-closure-requests.html" class="nav-item"><span class="nav-icon">✔️</span> Closure Requests</a>
+  <div class="sidebar-bottom">
+    <a href="../../views/login.html" class="nav-item" onclick="sessionStorage.clear()"><span class="nav-icon">🚪</span> Logout</a>
+    <div class="user-row">
+      <div class="user-avatar" id="sidebar-avatar">?</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-name">Loading…</div>
+        <div class="user-role" id="sidebar-role">Supervisor</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="breadcrumb">
+      <a href="supervisor-dashboard.html">CivicTrack</a>
+      <span class="sep">›</span>
+      <a href="supervisor-dashboard.html">Supervisor</a>
+      <span class="sep">›</span>
+      <a href="supervisor-department-cases.html">Cases</a>
+      <span class="sep">›</span>
+      <span class="current" id="breadcrumb-case">Case Details</span>
+    </div>
+    <div class="topbar-right">
+      
+      <div class="user-chip">
+        <div class="user-avatar" style="width:28px;height:28px;font-size:11px;" id="topbar-avatar">?</div>
+        <span id="topbar-name">Supervisor</span> ▾
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Case Details</h1>
+        <p class="page-sub">Review complaint information, progress updates, and department actions.</p>
+      </div>
+      <button class="btn-back" onclick="history.back()">← Back</button>
+    </div>
+
+    <div class="detail-layout">
+
+      <!-- ══ LEFT COLUMN ══════════════════════════════════════════════════ -->
+      <div class="left-col">
+
+        <!-- 1. Complaint Summary -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon blue-icon">📋</div>
+            <div class="section-title">Complaint Summary</div>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="s-label">Case ID</div>
+              <div class="s-value mono" id="d-id">—</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Category</div>
+              <div class="s-value" id="d-category">—</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Citizen</div>
+              <div class="s-value" id="d-citizen">—</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Location</div>
+              <div class="s-value" id="d-zone">—</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Priority</div>
+              <div class="s-value" id="d-priority">—</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Status</div>
+              <div class="s-value" id="d-status">—</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Date Submitted</div>
+              <div class="s-value" id="d-date">—</div>
+            </div>
+             <div class="summary-item">
+              <div class="s-label">Phone Number</div>
+              <div class="s-value" id="d-phone">—</div>
+            </div>
+            
+          </div>
+        </div>
+
+        <!-- 2. Complaint Description + Photos -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon orange-icon">📝</div>
+            <div class="section-title">Complaint Description</div>
+          </div>
+          <div class="desc-body">
+            <p class="desc-text" id="d-description">No description provided.</p>
+          </div>
+          <div class="attach-section">
+            <div class="attach-label">
+              <span>📎</span> Attachments
+            </div>
+            <div class="attach-grid" id="d-attachments">
+              <p class="no-attach">No photos uploaded by citizen.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Assignment Details -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon purple-icon">🏢</div>
+            <div class="section-title">Assignment Details</div>
+          </div>
+          <div class="assign-grid">
+            <div class="assign-item">
+              <div class="assign-icon-wrap">🏢</div>
+              <div>
+                <div class="assign-sub">Current Department</div>
+                <div class="assign-val" id="d-dept">—</div>
+              </div>
+            </div>
+            <div class="assign-item">
+              <div class="assign-icon-wrap">👤</div>
+              <div>
+                <div class="assign-sub">Assigned Officer</div>
+                <div class="assign-val" id="d-officer">—</div>
+              </div>
+            </div>
+            <div class="assign-item">
+              <div class="assign-icon-wrap">📅</div>
+              <div>
+                <div class="assign-sub">Date Assigned</div>
+                <div class="assign-val" id="d-assigned-date">—</div>
+              </div>
+            </div>
+            <div class="assign-item">
+              <div class="assign-icon-wrap">⏱</div>
+              <div>
+                <div class="assign-sub">Estimated Resolution</div>
+                <div class="assign-val" id="d-est-resolution">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Case Activity -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon green-icon">⚡</div>
+            <div class="section-title">Case Activity</div>
+          </div>
+          <div class="activity-wrap" id="activity-list">
+            <!-- populated by JS -->
+          </div>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- ══ RIGHT COLUMN ═════════════════════════════════════════════════ -->
+      <div class="right-col">
+
+        <!-- Notes -->
+        <div class="card section-card">
+          <div class="section-header">
+            <div class="section-icon red-icon">💬</div>
+            <div class="section-title">Notes</div>
+          </div>
+          <div class="notes-body">
+            <div id="notes-list"></div>
+            <div class="note-input-row">
+              <input type="text" class="note-input" id="note-input" placeholder="Add a supervisor note…"/>
+              <button class="btn-add-note" id="add-note-btn">Add</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /right-col -->
+
+    </div><!-- /detail-layout -->
+  </div><!-- /content -->
+</main>
+
+<script type="module" src="../../js/supervisor/case-details.js"></script>
+</body>
+</html>

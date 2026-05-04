@@ -1,0 +1,42 @@
+/* ============================================================
+   CivicTrack – Citizen Dashboard
+   css/citizen-dashboard.css
+   ============================================================ */
+
+.stats-grid .stat-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-grid .stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border-light);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.stats-grid .stat-card:nth-child(1)::after { background: var(--blue); }
+.stats-grid .stat-card:nth-child(2)::after { background: var(--yellow); }
+.stats-grid .stat-card:nth-child(3)::after { background: var(--red); }
+.stats-grid .stat-card:nth-child(4)::after { background: var(--green); }
+
+.table td .case-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.table td .title-cell {
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+/* Dismissed / loading transition */
+#dashSubtitle { transition: opacity .3s; }
