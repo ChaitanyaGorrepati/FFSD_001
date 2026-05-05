@@ -4,7 +4,7 @@ import { User } from '../common/interfaces/user.interface';
 @Injectable()
 export class UsersService {
 private users: User[] = [
-  { id: 1, name: "Admin", role: "superuser" },
+  { id: 1, name: "Admin", role: "superuser", password: "admin123" },
 
   { id: 2, name: "Kiran", role: "supervisor", department: "electricity" },
   { id: 3, name: "Kishore", role: "supervisor", department: "sanitation" },
