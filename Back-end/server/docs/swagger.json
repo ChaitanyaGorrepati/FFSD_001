@@ -67,6 +67,7 @@
             "description": ""
           }
         },
+        "summary": "Create user (superuser only)",
         "tags": [
           "users"
         ]
@@ -140,6 +141,7 @@
             "description": ""
           }
         },
+        "summary": "Update user (superuser only)",
         "tags": [
           "users"
         ]
@@ -170,6 +172,7 @@
             "description": ""
           }
         },
+        "summary": "Delete user (superuser only)",
         "tags": [
           "users"
         ]
@@ -189,11 +192,26 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "name": "Rahul",
+                  "phone": "9876543210",
+                  "password": "123456"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "201": {
             "description": ""
           }
         },
+        "summary": "Register as citizen",
         "tags": [
           "users"
         ]
@@ -206,7 +224,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -248,7 +266,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -298,7 +316,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -340,7 +358,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -392,7 +410,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -444,7 +462,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -486,7 +504,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -531,55 +549,6 @@
         ]
       }
     },
-    "/cases/{id}/transfer-decision": {
-      "patch": {
-        "operationId": "CasesController_transferDecision",
-        "parameters": [
-          {
-            "name": "userid",
-            "in": "header",
-            "description": "user id for filtering (citizen/officer)",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "role",
-            "in": "header",
-            "description": "citizen | officer | supervisor | superuser",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "userid",
-            "required": true,
-            "in": "header",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "cases"
-        ]
-      }
-    },
     "/cases/{id}/request-transfer": {
       "patch": {
         "operationId": "CasesController_requestTransfer",
@@ -587,7 +556,7 @@
           {
             "name": "userid",
             "in": "header",
-            "description": "user id for filtering (citizen/officer)",
+            "description": "user id for filtering (citizen/officer/supervisor)",
             "required": false,
             "schema": {
               "type": "string"
@@ -611,11 +580,86 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "toDepartment": "sanitation"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
           }
         },
+        "summary": "Officer requests transfer",
+        "tags": [
+          "cases"
+        ]
+      }
+    },
+    "/cases/{id}/transfer-decision": {
+      "patch": {
+        "operationId": "CasesController_transferDecision",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "header",
+            "description": "user id for filtering (citizen/officer/supervisor)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "header",
+            "description": "citizen | officer | supervisor | superuser",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userid",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "example": {
+                  "decision": "approved"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Supervisor approves/rejects transfer",
         "tags": [
           "cases"
         ]
