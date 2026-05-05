@@ -47,11 +47,12 @@ export class UsersController {
     return this.usersService.remove(Number(id)); // ✅ FIXED
   }
 
-  @Post('register')
-@ApiOperation({ summary: 'Register as citizen' })
-createCitizen(@Body() data: CreateUserDto) {
+@Post('register')
+createCitizen(@Body() data: any) {
   return this.usersService.create({
-    ...data,
+    name: data.name,
+    phone: data.phone,
+    password: data.password,
     role: 'citizen'
   });
 }

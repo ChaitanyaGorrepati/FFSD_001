@@ -120,22 +120,6 @@ export function handleAddNote(id, note) {
   return { success: true };
 }
 
-// ── TRANSFER REQUEST (KEEP MOCK) ────────────────────────────────────────
-export function handleTransferRequest(id, toDept, reason, notes) {
-  updateCase(id, {
-    status: "Transferred",
-    transfer: {
-      requested: true,
-      toDept,
-      reason: reason || "",
-      notes: notes || "",
-      status: "pending",
-      requestedAt: new Date().toISOString(),
-    },
-  });
-
-  return { success: true };
-}
 
 // ── SUPERVISOR VIEW (TEMP MOCK FILTER) ─────────────────────────────────
 export async function handleGetCasesForSupervisor() {
@@ -186,6 +170,59 @@ export async function handleUpdateCaseStatus(caseId, status) {
     console.error("Backend error:", err);
     throw new Error("Status update failed");
   }
+
+  return res.json();
+}
+
+export async function handleClosureDecision(caseId, decision) {
+  const res = await fetch(`http://localhost:3000/cases/${caseId}/closure-decision`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      role: "supervisor"
+    },
+    body: JSON.stringify({ decision })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Closure decision error:", err);
+    throw new Error("Closure decision failed");
+  }
+
+  return res.json();
+}
+
+
+export async function handleTransferRequest(caseId, toDepartment) {
+  const res = await fetch(`http://localhost:3000/cases/${caseId}/request-transfer`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      role: "officer"
+    },
+    body: JSON.stringify({ toDepartment })
+  });
+
+  if (!res.ok) throw new Error("Transfer request failed");
+
+  return res.json();
+}
+
+export async function handleTransferDecision(caseId, decision) {
+  const user = JSON.parse(sessionStorage.getItem("ct_user"));
+
+  const res = await fetch(`http://localhost:3000/cases/${caseId}/transfer-decision`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      role: "supervisor",
+      userid: user.id   // 🔥 REQUIRED
+    },
+    body: JSON.stringify({ decision })
+  });
+
+  if (!res.ok) throw new Error("Transfer decision failed");
 
   return res.json();
 }

@@ -1,4 +1,4 @@
-import { IsIn, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -9,6 +9,19 @@ export class CreateUserDto {
   role: 'citizen' | 'officer' | 'supervisor' | 'superuser';
 
   @IsOptional()
-  @IsNumber()
-  departmentId?: number;
+  @IsString()
+  department?: string;
+
+  @IsOptional()
+  @IsString()
+  zone?: string;
+
+  // 🔥 ADD THESE
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

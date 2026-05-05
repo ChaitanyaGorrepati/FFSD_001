@@ -80,4 +80,29 @@ handleClosure(
   );
 }
 
+
+
+
+@Patch(':id/transfer-decision')
+transferDecision(
+  @Param('id') id: string,
+  @Headers('userid') userId: string,
+  @Body() body: { decision: string }
+) {
+  return this.casesService.transferDecision(
+    Number(id),
+    body.decision,
+    Number(userId)
+  );
+}
+
+
+@Patch(':id/request-transfer')
+requestTransfer(
+  @Param('id') id: string,
+  @Body() body: { toDepartment: string }
+) {
+  return this.casesService.requestTransfer(Number(id), body.toDepartment);
+}
+
 }

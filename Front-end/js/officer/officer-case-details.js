@@ -127,9 +127,9 @@ document.addEventListener("click", (e) => {
     document.getElementById("crm-case-title-display").textContent = currentCase.title;
   }
 
-  if (action === "transfer") {
-    alert("Transfer request wiring next 🚀");
-  }
+ if (action === "transfer") {
+  window.location.href = `officer-transfer-requests.html?id=${currentCase.id}`;
+}
 
   if (action === "add-note") {
     const val = document.getElementById("note-input").value;

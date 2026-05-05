@@ -1,8 +1,11 @@
-// src/common/interfaces/user.interface.ts
-
 export interface User {
   id: number;
   name: string;
   role: 'citizen' | 'officer' | 'supervisor' | 'superuser';
-  departmentId?: number;
+
+  department?: string;
+  zone?: string;        // ✅ THIS MUST EXIST
+
+  password?: string;
+  phone?: string;
 }

@@ -189,22 +189,11 @@
             }
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateUserDto"
-              }
-            }
-          }
-        },
         "responses": {
           "201": {
             "description": ""
           }
         },
-        "summary": "Register as citizen",
         "tags": [
           "users"
         ]
@@ -539,6 +528,119 @@
         "summary": "Supervisor handles closure request",
         "tags": [
           "cases"
+        ]
+      }
+    },
+    "/cases/{id}/transfer-decision": {
+      "patch": {
+        "operationId": "CasesController_transferDecision",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "header",
+            "description": "user id for filtering (citizen/officer)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "header",
+            "description": "citizen | officer | supervisor | superuser",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userid",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ]
+      }
+    },
+    "/cases/{id}/request-transfer": {
+      "patch": {
+        "operationId": "CasesController_requestTransfer",
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "header",
+            "description": "user id for filtering (citizen/officer)",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "in": "header",
+            "description": "citizen | officer | supervisor | superuser",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "cases"
+        ]
+      }
+    },
+    "/departments": {
+      "get": {
+        "operationId": "DepartmentsController_getAll",
+        "parameters": [
+          {
+            "name": "role",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "departments"
         ]
       }
     }

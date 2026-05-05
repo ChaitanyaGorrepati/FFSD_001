@@ -1,67 +1,77 @@
 // js/supervisor/accept-transfers.js
-// ─────────────────────────────────────────────────────────────────────────────
-// Accept Transfers page — destination supervisor sees cases routed TO their dept
-// (after origin supervisor approved them). They assign to one of their officers.
-// ─────────────────────────────────────────────────────────────────────────────
 
 import {
-  getCases, updateCase, appendActivity, pushNotification,
-  resolveOfficerName, priorityBadge, formatDate,
-  getLoggedInSupervisor, getUsers
+  getUsers,
+  priorityBadge,
+  formatDate,
+  getLoggedInSupervisor
 } from './supervisorData.js';
+
 import { populateSupervisorIdentity } from './sidebar-identity.js';
+
+import {
+  handleGetCases,
+  handleTransferDecision
+} from "../../controllers/caseController.js";
 
 populateSupervisorIdentity();
 
 const supervisor = getLoggedInSupervisor();
-const tbody      = document.getElementById("transfers-tbody");
-const emptyState = document.getElementById("empty-state");
-const detailPanel= document.getElementById("detail-panel");
-const overlay    = document.getElementById("overlay");
-const panelBody  = document.getElementById("panel-body");
-const panelClose = document.getElementById("panel-close");
-const btnAccept  = document.getElementById("btn-accept");
-const btnReject  = document.getElementById("btn-reject");
-const btnViewCase= document.getElementById("btn-view-case");
 
+const tbody       = document.getElementById("transfers-tbody");
+const emptyState  = document.getElementById("empty-state");
+const detailPanel = document.getElementById("detail-panel");
+const overlay     = document.getElementById("overlay");
+const panelBody   = document.getElementById("panel-body");
+const panelClose  = document.getElementById("panel-close");
+const btnAccept   = document.getElementById("btn-accept");
+const btnReject   = document.getElementById("btn-reject");
+const btnViewCase = document.getElementById("btn-view-case");
+
+let backendCases = [];
 let selectedCaseId = null;
 
-// ── Get incoming transfers for this dept ──────────────────────────────────────
-// Reads ALL cases (not just this dept's) because the case still has its ORIGINAL
-// department until we accept it.
+// ── FILTER INCOMING TRANSFERS ───────────────────
 function getIncomingTransfers() {
-  const allRaw = JSON.parse(localStorage.getItem("cases") || "[]");
-  return allRaw.filter(c =>
-    c.transfer?.requested === true &&
-    c.transfer?.toDept === supervisor?.department &&   // this dept is destination
-    c.transfer?.supervisorStatus === "approved" &&     // origin supervisor approved
-    (!c.transfer.destinationStatus ||
-      c.transfer.destinationStatus === "pending")      // we haven't acted yet
+  return backendCases.filter(c =>
+    c.transferRequested === true &&
+    c.transferStatus === "forwarded" &&
+    c.transferTo === supervisor?.department
   );
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
+// ── STATS ───────────────────────────────────────
 function updateStats() {
-  const allRaw  = JSON.parse(localStorage.getItem("cases") || "[]");
-  const forDept = allRaw.filter(c =>
-    c.transfer?.toDept === supervisor?.department &&
-    c.transfer?.supervisorStatus === "approved"
+  const all = backendCases.filter(c =>
+    c.transferTo === supervisor?.department
   );
 
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set("stat-pending",  getIncomingTransfers().length);
-  set("stat-accepted", forDept.filter(c => c.transfer?.destinationStatus === "accepted").length);
-  set("stat-rejected", forDept.filter(c => c.transfer?.destinationStatus === "rejected").length);
+  const set = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = v;
+  };
+
+  set("stat-pending",
+    all.filter(c => c.transferStatus === "forwarded").length
+  );
+
+  set("stat-accepted",
+    all.filter(c => c.transferStatus === "approved").length
+  );
+
+  set("stat-rejected",
+    all.filter(c => c.transferStatus === "rejected").length
+  );
 }
 
-// ── Table ─────────────────────────────────────────────────────────────────────
-// HTML has 7 columns: Case ID | Category | From Department | Zone | Priority | Date Requested | Action
+// ── TABLE ───────────────────────────────────────
 function renderTable() {
   const transfers = getIncomingTransfers();
+
   if (emptyState) emptyState.style.display = transfers.length === 0 ? "block" : "none";
   if (!tbody) return;
 
-  if (transfers.length === 0) {
+  if (!transfers.length) {
     tbody.innerHTML = "";
     return;
   }
@@ -70,28 +80,32 @@ function renderTable() {
     <tr>
       <td><a class="case-id-link" href="case-details.html?id=${c.id}">${c.id}</a></td>
       <td>${c.category || "—"}</td>
-      <td>${c.transfer?.originDept || c.department || "—"}</td>
+      <td>${c.department || "—"}</td>
       <td>${c.zone || "—"}</td>
       <td>${priorityBadge(c.priority)}</td>
-      <td>${formatDate(c.transfer?.approvedAt || c.createdAt)}</td>
+      <td>${formatDate(c.createdAt)}</td>
       <td>
-        <button class="btn-primary" style="padding:6px 16px;font-size:12.5px;"
-          onclick="openPanel('${c.id}')">Review</button>
+        <button class="btn-primary"
+          style="padding:6px 16px;font-size:12.5px;"
+          onclick="openPanel('${c.id}')">
+          Review
+        </button>
       </td>
-    </tr>`).join("");
+    </tr>
+  `).join("");
 }
 
-// ── Slide-in panel ────────────────────────────────────────────────────────────
+// ── PANEL ───────────────────────────────────────
 window.openPanel = function(id) {
   selectedCaseId = id;
-  const allRaw = JSON.parse(localStorage.getItem("cases") || "[]");
-  const c = allRaw.find(x => x.id === id);
+
+  const c = backendCases.find(x => String(x.id) === String(id));
   if (!c) return;
 
-  // Officers in THIS supervisor's department (destination dept)
   const deptOfficers = getUsers().filter(
     u => u.role === "officer" && u.department === supervisor?.department
   );
+
   const officerOptions = deptOfficers.map(o =>
     `<option value="${o.id}">${o.name} (${o.zone})</option>`
   ).join("");
@@ -101,59 +115,54 @@ window.openPanel = function(id) {
       <div class="detail-label">Case ID</div>
       <div class="detail-value">${c.id}</div>
     </div>
-    <div class="detail-field">
-      <div class="detail-label">Citizen</div>
-      <div class="detail-value">${c.citizen || c.submittedName || "—"}</div>
-    </div>
+
     <div class="detail-field">
       <div class="detail-label">Category</div>
       <div class="detail-value">${c.category || "—"}</div>
     </div>
+
     <div class="detail-field">
       <div class="detail-label">Zone</div>
       <div class="detail-value">${c.zone || "—"}</div>
     </div>
+
     <div class="detail-field">
       <div class="detail-label">From Department</div>
-      <div class="detail-value">${c.transfer?.originDept || c.department || "—"}</div>
+      <div class="detail-value">${c.department || "—"}</div>
     </div>
+
     <div class="detail-field">
       <div class="detail-label">To Department</div>
-      <div class="detail-value">${c.transfer?.toDept || "—"}</div>
+      <div class="detail-value">${c.transferTo || "—"}</div>
     </div>
+
     <div class="detail-field">
       <div class="detail-label">Priority</div>
       <div class="detail-value">${priorityBadge(c.priority)}</div>
     </div>
-    <div class="detail-field">
-      <div class="detail-label">Transfer Reason</div>
-      <div class="transfer-reason-box">${
-        c.transfer?.reason ||
-        c.transfer?.notes ||
-        (c.notes?.length ? c.notes[c.notes.length - 1] : "No reason provided.")
-      }</div>
-    </div>
+
     <div class="detail-field">
       <div class="detail-label">Assign to Officer</div>
       <select id="assign-officer-select"
         style="width:100%;margin-top:6px;padding:9px 12px;
-               border:1.5px solid var(--gray-200);border-radius:8px;
-               font-size:13px;font-family:'DM Sans',sans-serif;
-               background:#fff;outline:none;cursor:pointer;">
-        <option value="">— Select officer to assign —</option>
+        border:1.5px solid var(--gray-200);border-radius:8px;">
+        <option value="">— Select officer —</option>
         ${officerOptions}
       </select>
       <p id="assign-error"
-         style="color:#E53935;font-size:12px;margin-top:4px;display:none;">
+        style="color:#E53935;font-size:12px;margin-top:4px;display:none;">
         Please select an officer.
       </p>
-    </div>`;
+    </div>
+  `;
 
   if (btnViewCase) btnViewCase.href = `case-details.html?id=${c.id}`;
+
   detailPanel?.classList.add("open");
   overlay?.classList.add("show");
 };
 
+// ── CLOSE PANEL ─────────────────────────────────
 function closePanel() {
   detailPanel?.classList.remove("open");
   overlay?.classList.remove("show");
@@ -161,121 +170,85 @@ function closePanel() {
 }
 
 panelClose?.addEventListener("click", closePanel);
-overlay?.addEventListener("click",   closePanel);
+overlay?.addEventListener("click", closePanel);
 
-// ── Accept: assign to selected officer, move case to this dept ────────────────
+// ── ACCEPT ──────────────────────────────────────
 btnAccept?.addEventListener("click", () => {
   if (!selectedCaseId) return;
 
-  const selectEl  = document.getElementById("assign-officer-select");
-  const errorEl   = document.getElementById("assign-error");
-  const officerId = selectEl?.value;
+  // 🔥 AUTO ASSIGN OFFICER (NO DROPDOWN)
+  const caseObj = backendCases.find(c => c.id == selectedCaseId);
 
-  if (!officerId) {
-    if (errorEl) errorEl.style.display = "block";
-    return;
-  }
-  if (errorEl) errorEl.style.display = "none";
+  let officerId = 4; // default sanitation officer
 
-  const allRaw = JSON.parse(localStorage.getItem("cases") || "[]");
-  const c = allRaw.find(x => x.id === selectedCaseId);
-  if (!c) return;
+  if (caseObj?.zone === "A") officerId = 4;
+  if (caseObj?.zone === "B") officerId = 4;
+  if (caseObj?.zone === "C") officerId = 4;
 
-  const officer     = getUsers().find(u => u.id === officerId);
-  const officerName = officer ? `${officer.name} (${officer.zone})` : officerId;
-  const toDept      = c.transfer?.toDept || supervisor?.department;
-  const prevOfficer = c.assignedTo;
-
-  updateCase(selectedCaseId, {
-    department: toDept,       // case now belongs to destination dept
-    assignedTo: officerId,    // reassigned to chosen officer
-    status:     "Assigned",
-    transfer: {
-      ...c.transfer,
-      destinationStatus: "accepted",
-      acceptedAt:        new Date().toISOString(),
-      acceptedBySup:     supervisor?.id,
-      acceptedBySupName: supervisor?.name
-    }
-  });
-
-  appendActivity(selectedCaseId, {
-    type:  "accepted",
-    label: `Transfer accepted by Supervisor ${supervisor?.name} (${toDept}). Assigned to Officer ${officerName}.`
-  });
-
-  // Notify the newly assigned officer
-  pushNotification(
-    officerId,
-    `📋 Case ${selectedCaseId} (${c.category}) has been transferred to your department (${toDept}) and assigned to you by Supervisor ${supervisor?.name}.`,
-    selectedCaseId
-  );
-
-  // Notify the original officer
-  if (prevOfficer && prevOfficer !== officerId) {
-    pushNotification(
-      prevOfficer,
-      `Your transferred case ${selectedCaseId} has been accepted by the ${toDept} department and assigned to Officer ${officerName}.`,
-      selectedCaseId
-    );
-  }
-
-  closePanel();
-  renderTable();
-  updateStats();
-  toast(`Transfer accepted. Case assigned to Officer ${officerName} in ${toDept}.`, "green");
+  handleTransferDecision(selectedCaseId, "approved")
+    .then(() => {
+      toast("Transfer accepted and assigned");
+      closePanel();
+      loadTransfers();
+    })
+    .catch(err => {
+      console.error(err);
+      toast("Accept failed", "red");
+    });
 });
 
-// ── Reject incoming transfer ──────────────────────────────────────────────────
+// ── REJECT ──────────────────────────────────────
 btnReject?.addEventListener("click", () => {
   if (!selectedCaseId) return;
 
-  const allRaw = JSON.parse(localStorage.getItem("cases") || "[]");
-  const c = allRaw.find(x => x.id === selectedCaseId);
-  if (!c) return;
-
-  updateCase(selectedCaseId, {
-    transfer: {
-      ...c.transfer,
-      destinationStatus:  "rejected",
-      rejectedByDestAt:   new Date().toISOString(),
-      rejectedByDestSup:  supervisor?.id
-    },
-    status: "In Progress"   // stays with original dept officer
-  });
-
-  appendActivity(selectedCaseId, {
-    type:  "rejected",
-    label: `Incoming transfer rejected by Supervisor ${supervisor?.name} (${supervisor?.department}). Case returned to ${c.transfer?.originDept || c.department}.`
-  });
-
-  // Notify the original officer
-  if (c.assignedTo) {
-    pushNotification(
-      c.assignedTo,
-      `The ${supervisor?.department} department rejected the transfer for case ${selectedCaseId}. Case stays with you — please continue working on it.`,
-      selectedCaseId
-    );
-  }
-
-  closePanel();
-  renderTable();
-  updateStats();
-  toast("Incoming transfer rejected. Case remains with originating department.", "red");
+  handleTransferDecision(selectedCaseId, "rejected")
+    .then(() => {
+      toast("Transfer rejected");
+      closePanel();
+      loadTransfers();
+    })
+    .catch(err => {
+      console.error(err);
+      toast("Reject failed", "red");
+    });
 });
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
+// ── TOAST ───────────────────────────────────────
 function toast(msg, color = "green") {
+  const map = { green:"#2E7D32", red:"#E53935" };
+
   const t = document.createElement("div");
-  t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;
-    background:${color==="green"?"#2E7D32":"#E53935"};color:#fff;
-    padding:12px 20px;border-radius:10px;font-size:13.5px;
-    font-family:'DM Sans',sans-serif;font-weight:500;
-    box-shadow:0 4px 16px rgba(0,0,0,.2);`;
+  t.style.cssText = `
+    position:fixed;bottom:24px;right:24px;
+    background:${map[color]};color:#fff;
+    padding:12px 20px;border-radius:10px;
+    z-index:9999;font-size:13px;
+  `;
+
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+
+  setTimeout(() => t.remove(), 3000);
 }
 
-updateStats();
-renderTable();
+// ── LOAD ────────────────────────────────────────
+async function loadTransfers() {
+  try {
+    const user = JSON.parse(sessionStorage.getItem("ct_user"));
+
+    const data = await handleGetCases("supervisor", user.id);
+
+    console.log("🔥 BACKEND:", data);
+
+    backendCases = data;
+
+    renderTable();
+    updateStats();
+
+  } catch (err) {
+    console.error("Load error:", err);
+  }
+}
+
+// INIT
+loadTransfers();

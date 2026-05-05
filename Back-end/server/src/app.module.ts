@@ -5,9 +5,9 @@ import { AppService } from './app.service';
 import { RolesGuard } from './common/guards/roles/roles.guard';
 import { UsersModule } from './users/users.module';
 import { CasesModule } from './cases/cases.module';
-
+import { DepartmentsModule } from './departments/departments.module';
 @Module({
-  imports: [UsersModule, CasesModule],
+  imports: [UsersModule, CasesModule, DepartmentsModule],
   controllers: [AppController],
   providers: [
     AppService,
