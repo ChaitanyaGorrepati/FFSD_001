@@ -1,4 +1,5 @@
 // js/officer/officer-dashboard.js
+
 import {
   getOfficerSession,
   initOfficerUI,
@@ -7,25 +8,27 @@ import {
   statusBadge,
   priorityBadge,
   formatDate,
-  updateCaseById,
-  getCaseById,
-  getAllCases,
   updateNotifBadge,
   renderNotifPanel
 } from "./officer-utils.js";
 
-// ── Session ───────────────────────────────────────────────────────────────────
+import {
+  handleGetCases,
+  handleUpdateCaseStatus
+} from "../../controllers/caseController.js"; // ✅ NEW
+
+// ── Session ───────────────────────────────────────
 const user = getOfficerSession();
 if (!user) throw new Error("No session");
 
-// ── Init UI ───────────────────────────────────────────────────────────────────
+// ── Init UI ───────────────────────────────────────
 initOfficerUI(user);
 updateSidebarBadges(user.id, user.name);
 updateNotifBadge(user.id, user.name);
 
 document.getElementById("welcome-name").textContent = user.name;
 
-// ── Notification bell ─────────────────────────────────────────────────────────
+// ── Notification bell ─────────────────────────────
 document.getElementById("notif-btn")?.addEventListener("click", e => {
   e.stopPropagation();
   const panel = document.getElementById("notif-panel");
@@ -39,34 +42,47 @@ document.addEventListener("click", () => {
   if (panel) panel.style.display = "none";
 });
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// ── State ─────────────────────────────────────────
 let activeCaseId = null;
+let backendCases = [];
 
-// ── Helper: get this officer's cases (id OR name fallback) ────────────────────
-function getMyCases() {
-  return getAllCases().filter(c =>
-    c.assignedTo === user.id || c.assignedTo === user.name
-  );
+// 🔥 NORMALIZE BACKEND → UI
+function normalizeCases(data) {
+  return data.map(c => ({
+    ...c,
+    id: String(c.id),
+
+    status:
+      c.status === "open" ? "Assigned" :
+      c.status === "in-progress" ? "In Progress" :
+      c.status === "closed" ? "Closed" :
+      c.status,
+
+    priority: c.priority || "Medium"
+  }));
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────
 function render() {
-  const cases = getMyCases();
+  const cases = backendCases;
 
-  // Stats — includes Closed in addition to the standard four
-  document.getElementById("stat-assigned").textContent    =
+  // Stats
+  document.getElementById("stat-assigned").textContent =
     cases.filter(c => c.status === "Assigned").length;
-  document.getElementById("stat-inprogress").textContent  =
+
+  document.getElementById("stat-inprogress").textContent =
     cases.filter(c => c.status === "In Progress").length;
-  document.getElementById("stat-resolved").textContent    =
-    cases.filter(c => c.status === "Resolved").length;
+
+  document.getElementById("stat-resolved").textContent =
+    cases.filter(c => c.status === "Closed").length;
+
   document.getElementById("stat-transferred").textContent =
     cases.filter(c => c.status === "Transferred").length;
-    
 
   updateSidebarBadges(user.id, user.name);
 
-  const tbody  = document.getElementById("recent-cases-body");
+  const tbody = document.getElementById("recent-cases-body");
+
   const recent = [...cases]
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 10);
@@ -77,7 +93,7 @@ function render() {
     return;
   }
 
-  // Use onclick strings so they work with the existing HTML modal buttons too
+  // ✅ UI untouched
   tbody.innerHTML = recent.map(c => `
     <tr>
       <td>
@@ -106,59 +122,10 @@ function render() {
   `).join("");
 }
 
-render();
-
-// ══════════════════════════════════════════════════════════════════════════════
-// Priority Modal
-// ══════════════════════════════════════════════════════════════════════════════
-function openPriorityModal(id) {
-  activeCaseId = id;
-  const pmId = document.getElementById("pm-case-id");
-  if (pmId) pmId.textContent = id;
-
-  const c = getCaseById(id);
-  document.querySelectorAll('input[name="priority"]').forEach(r => {
-    r.checked = c ? r.value === (c.priority || "Medium") : false;
-  });
-  document.getElementById("priority-modal").classList.add("active");
-}
-
-function closePriorityModal() {
-  document.getElementById("priority-modal").classList.remove("active");
-  activeCaseId = null;
-}
-
-function savePriority() {
-  const val = document.querySelector('input[name="priority"]:checked')?.value;
-  if (!val || !activeCaseId) return;
-  updateCaseById(activeCaseId, { priority: val });
-  closePriorityModal();
-  render();
-}
-
-// Overlay click to close
-document.getElementById("priority-modal").addEventListener("click", function(e) {
-  if (e.target === this) closePriorityModal();
-});
-
-// Expose on window — required because modal buttons use onclick="..." in HTML
-window.openPriorityModal  = openPriorityModal;
-window.closePriorityModal = closePriorityModal;
-window.savePriority       = savePriority;
-
-// ══════════════════════════════════════════════════════════════════════════════
-// Status Modal
-// ══════════════════════════════════════════════════════════════════════════════
+// ── STATUS MODAL (🔥 BACKEND FIXED) ───────────────
 function openStatusModal(id) {
   activeCaseId = id;
-  const smId = document.getElementById("sm-case-id");
-  if (smId) smId.textContent = id;
-
-  const c = getCaseById(id);
-  // Pre-select the current status radio — including Closed
-  document.querySelectorAll('input[name="status"]').forEach(r => {
-    r.checked = c ? r.value === (c.status || "Assigned") : false;
-  });
+  document.getElementById("sm-case-id").textContent = id;
   document.getElementById("status-modal").classList.add("active");
 }
 
@@ -167,25 +134,38 @@ function closeStatusModal() {
   activeCaseId = null;
 }
 
-function saveStatus() {
+async function saveStatus() {
   const val = document.querySelector('input[name="status"]:checked')?.value;
   if (!val || !activeCaseId) return;
-  updateCaseById(activeCaseId, { status: val });
+
+  try {
+    await handleUpdateCaseStatus(activeCaseId, val);
+    await init(); // reload
+  } catch (err) {
+    console.error("Status update failed:", err);
+  }
+
   closeStatusModal();
-  render();
 }
 
-// Overlay click to close
-document.getElementById("status-modal").addEventListener("click", function(e) {
-  if (e.target === this) closeStatusModal();
-});
-
-// Expose on window — required because modal buttons use onclick="..." in HTML
-window.openStatusModal  = openStatusModal;
+window.openStatusModal = openStatusModal;
 window.closeStatusModal = closeStatusModal;
-window.saveStatus       = saveStatus;
+window.saveStatus = saveStatus;
 
-// ── Global logout (sidebar button uses onclick="logout()") ────────────────────
+// ── INIT (🔥 MAIN FIX) ────────────────────────────
+async function init() {
+  try {
+    const data = await handleGetCases("officer", String(user.id));
+    backendCases = normalizeCases(data);
+    render();
+  } catch (err) {
+    console.error("Dashboard error:", err);
+  }
+}
+
+init();
+
+// ── Logout ───────────────────────────────────────
 window.logout = function() {
   sessionStorage.removeItem("ct_user");
   sessionStorage.removeItem("ct_selected_role");

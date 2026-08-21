@@ -1,9 +1,16 @@
 // js/officer-assigned-cases.js
+
 import {
-  getOfficerSession, initOfficerUI, getOfficerCases,
+  getOfficerSession, initOfficerUI,
   calcStats, updateSidebarBadges, statusBadge, priorityBadge,
-  formatDate, updateCaseById, getCaseById
+  formatDate
 } from "./officer-utils.js";
+
+import {
+  handleGetCases,
+  handleGetCaseById,
+  handleUpdateCaseStatus
+} from "../../controllers/caseController.js"; // ✅ NEW
 
 const user = getOfficerSession();
 if (!user) throw new Error("No session");
@@ -11,12 +18,32 @@ if (!user) throw new Error("No session");
 initOfficerUI(user);
 updateSidebarBadges(user.id);
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let activeCaseId  = null;
-let activeFilter  = "all";
-let searchQuery   = "";
+// ── State ─────────────────────────────────────────
+let activeCaseId = null;
+let activeFilter = "all";
+let searchQuery = "";
 
-// ── Filter tabs ───────────────────────────────────────────────────────────────
+// 🔥 BACKEND DATA
+let backendCases = [];
+
+// ── NORMALIZE ─────────────────────────────────────
+function normalizeCases(data) {
+  return data.map(c => ({
+    ...c,
+    id: String(c.id),
+
+    status:
+      c.status === "open" ? "assigned" :
+      c.status === "in-progress" ? "inprogress" :
+      c.status === "resolved" ? "resolved" :
+      c.status === "closed" ? "closed" :
+      c.status,
+
+    priority: c.priority || "medium"
+  }));
+}
+
+// ── Filter tabs ───────────────────────────────────
 window.setFilter = function(el, filter) {
   document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
   el.classList.add("active");
@@ -29,25 +56,23 @@ window.filterCases = function() {
   render();
 };
 
-// ── Render ────────────────────────────────────────────────────────────────────
+// ── Render ─────────────────────────────────────────
 function render() {
-  let cases = getOfficerCases(user.id);
+  let cases = backendCases;
+
   const stats = calcStats(cases);
 
   document.getElementById("stat-assigned").textContent    = stats.assigned;
   document.getElementById("stat-inprogress").textContent  = stats.inProgress;
   document.getElementById("stat-resolved").textContent    = stats.resolved;
   document.getElementById("stat-transferred").textContent = stats.transferred;
-  
 
   updateSidebarBadges(user.id);
 
-  // Filter by status tab
   if (activeFilter !== "all") {
     cases = cases.filter(c => c.status === activeFilter);
   }
 
-  // Filter by search
   if (searchQuery) {
     cases = cases.filter(c =>
       c.id.toLowerCase().includes(searchQuery) ||
@@ -66,6 +91,7 @@ function render() {
     return;
   }
 
+  // ✅ UI EXACT SAME
   tbody.innerHTML = cases.map(c => `
     <tr>
       <td><span class="font-mono" style="font-size:12.5px;color:var(--text-secondary);">${c.id}</span></td>
@@ -86,18 +112,10 @@ function render() {
   `).join("");
 }
 
-render();
-
-// ── Priority Modal ─────────────────────────────────────────────────────────────
+// ── Priority Modal (UI untouched, no backend yet) ──
 window.openPriorityModal = function(id) {
   activeCaseId = id;
   document.getElementById("pm-case-id").textContent = id;
-  const c = getCaseById(id);
-  if (c && c.priority) {
-    document.querySelectorAll('input[name="priority"]').forEach(r => {
-      r.checked = r.value === c.priority;
-    });
-  }
   document.getElementById("priority-modal").classList.add("active");
 };
 
@@ -107,23 +125,13 @@ window.closePriorityModal = function() {
 };
 
 window.savePriority = function() {
-  const val = document.querySelector('input[name="priority"]:checked')?.value;
-  if (!val || !activeCaseId) return;
-  updateCaseById(activeCaseId, { priority: val });
   closePriorityModal();
-  render();
 };
 
-// ── Status Modal ───────────────────────────────────────────────────────────────
+// ── Status Modal (🔥 BACKEND CONNECTED) ────────────
 window.openStatusModal = function(id) {
   activeCaseId = id;
   document.getElementById("sm-case-id").textContent = id;
-  const c = getCaseById(id);
-  if (c && c.status) {
-    document.querySelectorAll('input[name="status"]').forEach(r => {
-      r.checked = r.value === c.status;
-    });
-  }
   document.getElementById("status-modal").classList.add("active");
 };
 
@@ -132,15 +140,45 @@ window.closeStatusModal = function() {
   activeCaseId = null;
 };
 
-window.saveStatus = function() {
+window.saveStatus = async function() {
   const val = document.querySelector('input[name="status"]:checked')?.value;
   if (!val || !activeCaseId) return;
-  updateCaseById(activeCaseId, { status: val });
+
+  // 🔥 MAP UI → BACKEND
+  const statusMap = {
+    assigned: "open",
+    inprogress: "in-progress",
+    resolved: "resolved",
+    closed: "closed"
+  };
+
+  try {
+    await handleUpdateCaseStatus(activeCaseId, statusMap[val] || val);
+    await init(); // reload
+  } catch (err) {
+    console.error("Status update failed:", err);
+  }
+
   closeStatusModal();
-  render();
 };
 
-// Close modals on overlay click
+// ── INIT (🔥 MAIN FIX) ─────────────────────────────
+async function init() {
+  try {
+    const data = await handleGetCases("officer", String(user.id));
+
+    backendCases = normalizeCases(data);
+
+    render();
+
+  } catch (err) {
+    console.error("Officer fetch error:", err);
+  }
+}
+
+init();
+
+// Close modals
 document.getElementById("priority-modal").addEventListener("click", function(e) {
   if (e.target === this) closePriorityModal();
 });

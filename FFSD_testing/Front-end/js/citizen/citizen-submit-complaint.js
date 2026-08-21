@@ -1,255 +1,95 @@
-// js/citizen/citizen-submit-complaint.js
-import { submitCase, getOfficers } from "../index.js";
+import { handleAddCase } from "../../controllers/caseController.js";
 
-// ── 1. Session guard ──────────────────────────────────────────────────────────
-const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
+document.addEventListener("DOMContentLoaded", () => {
+  const submitBtn = document.getElementById("submitBtn");
+  const deptSelect = document.getElementById("fDepartment");
+  const categorySelect = document.getElementById("fCategory");
 
-if (!currentUser || currentUser.role !== "citizen") {
-  window.location.href = "../../login.html";
-}
+  // 🔥 CATEGORY MAP (FULL VERSION)
+  const categoryMap = {
+    water: [
+      "Water Leakage",
+      "No Water Supply",
+      "Low Water Pressure",
+      "Contaminated Water"
+    ],
+    electricity: [
+      "Power Cut",
+      "Voltage Fluctuation",
+      "Street Light Issue",
+      "Transformer Fault"
+    ],
+    road: [
+      "Potholes",
+      "Road Damage",
+      "Drainage Blockage",
+      "Road Marking Issue"
+    ],
+    sanitation: [
+      "Garbage Not Collected",
+      "Overflowing Bins",
+      "Drain Blockage",
+      "Sewage Issue"
+    ]
+  };
 
-document.getElementById("logout-btn").addEventListener("click", (e) => {
-  e.preventDefault();
-  sessionStorage.removeItem("ct_user");
-  sessionStorage.removeItem("ct_selected_role");
-  window.location.href = "../login.html";
-});
+  // 🔥 CATEGORY DROPDOWN LOGIC
+  if (deptSelect) {
+    deptSelect.addEventListener("change", (e) => {
+      const dept = e.target.value.toLowerCase();
 
-// ── 2. Update name & avatar ───────────────────────────────────────────────────
-const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      categorySelect.innerHTML = '<option value="">Select category</option>';
+      categorySelect.disabled = false;
 
-document.getElementById("sidebarUserName").textContent = currentUser.name;
-document.getElementById("topbarUserName").textContent  = currentUser.name;
-document.querySelectorAll(".avatar").forEach(el => el.textContent = initials);
+      (categoryMap[dept] || []).forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        categorySelect.appendChild(option);
+      });
+    });
+  }
 
-// ── Department → Category mapping ─────────────────────────────────────────────
-const DEPT_CATEGORIES = {
-  Water: ["Water Leakage", "No Water Supply", "Low Water Pressure", "Contaminated Water"],
-  Electricity: ["Power Outage", "Street Light Not Working", "Voltage Fluctuation", "Exposed / Dangerous Wiring"],
-  Road: ["Pothole", "Road Damage / Cracks", "Drainage Blockage (Roadside)", "Traffic Signal Not Working"],
-  Sanitation: ["Garbage Overflow", "Irregular Waste Collection", "Open Dumping", "Drain Blockage"]
-};
-
-// ── DOM refs ──────────────────────────────────────────────────────────────────
-const deptSelect     = document.getElementById("fDepartment");
-const catSelect      = document.getElementById("fCategory");
-const zoneSelect     = document.getElementById("fZone");
-const titleInput     = document.getElementById("fTitle");
-const descInput      = document.getElementById("fDescription");
-const locationInput  = document.getElementById("fLocation");
-const phoneInput     = document.getElementById("fPhone");
-const prioritySelect = document.getElementById("fPriority");
-const contactTime    = document.getElementById("fContactTime");
-const submitBtn      = document.getElementById("submitBtn");
-const saveDraftBtn   = document.getElementById("saveDraftBtn");
-const successBanner  = document.getElementById("successBanner");
-const fileInput      = document.getElementById("fEvidence");
-const fileList       = document.getElementById("fileList");
-const uploadZone     = document.getElementById("uploadZone");
-
-// ── Phone: digits only, max 10 ────────────────────────────────────────────────
-phoneInput.addEventListener("input", () => {
-  phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
-});
-
-// ── Category sync ─────────────────────────────────────────────────────────────
-function updateCategories(dept) {
-  catSelect.innerHTML = "";
-  const placeholder = document.createElement("option");
-  placeholder.value = "";
-  placeholder.textContent = dept ? "Select category" : "Select department first";
-  catSelect.appendChild(placeholder);
-
-  if (!dept || !DEPT_CATEGORIES[dept]) {
-    catSelect.disabled = true;
-    catSelect.style.opacity = "0.55";
-    catSelect.style.cursor = "not-allowed";
+  // 🔥 SUBMIT LOGIC
+  if (!submitBtn) {
+    console.error("Submit button not found");
     return;
   }
 
-  DEPT_CATEGORIES[dept].forEach(label => {
-    const opt = document.createElement("option");
-    opt.value = label;
-    opt.textContent = label;
-    catSelect.appendChild(opt);
-  });
+  submitBtn.addEventListener("click", async (event) => {
+    event.preventDefault();
 
-  catSelect.disabled = false;
-  catSelect.style.opacity = "1";
-  catSelect.style.cursor = "pointer";
-}
+    const data = {
+      title: document.getElementById("fTitle").value,
+      description: document.getElementById("fDescription").value,
+      department: document.getElementById("fDepartment").value.toLowerCase(),
+      category: document.getElementById("fCategory").value,
+      zone: document.getElementById("fZone").value.replace("Zone ", ""),
+      priority: document.getElementById("fPriority").value.toLowerCase(),
+      citizenId: 1
+    };
 
-deptSelect.addEventListener("change", () => {
-  clearError("errDepartment");
-  clearError("errCategory");
-  catSelect.value = "";
-  updateCategories(deptSelect.value);
-});
-
-// ── File upload ───────────────────────────────────────────────────────────────
-fileInput.addEventListener("change", renderFiles);
-
-uploadZone.addEventListener("dragover", e => { e.preventDefault(); uploadZone.classList.add("drag-over"); });
-uploadZone.addEventListener("dragleave", () => uploadZone.classList.remove("drag-over"));
-uploadZone.addEventListener("drop", e => {
-  e.preventDefault();
-  uploadZone.classList.remove("drag-over");
-  fileInput.files = e.dataTransfer.files;
-  renderFiles();
-});
-
-function renderFiles() {
-  fileList.innerHTML = "";
-  Array.from(fileInput.files).forEach(f => {
-    const chip = document.createElement("div");
-    chip.className = "file-chip";
-    chip.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>${f.name}<span style="color:var(--text-muted);margin-left:auto;">${(f.size/1024).toFixed(1)} KB</span>`;
-    fileList.appendChild(chip);
-  });
-}
-
-// ── Validation ────────────────────────────────────────────────────────────────
-function clearError(id) { const el = document.getElementById(id); if (el) el.textContent = ""; }
-function setError(id, msg) { const el = document.getElementById(id); if (el) el.textContent = msg; }
-
-function validateForm() {
-  let valid = true;
-
-  ["errDepartment","errCategory","errZone","errTitle","errPhone"].forEach(clearError);
-  [deptSelect, catSelect, zoneSelect, titleInput, phoneInput].forEach(el => el.classList.remove("error"));
-
-  if (!deptSelect.value) {
-    setError("errDepartment", "Please select a department.");
-    deptSelect.classList.add("error"); valid = false;
-  }
-  if (!catSelect.value) {
-    setError("errCategory", deptSelect.value ? "Please select a category." : "Select a department first.");
-    catSelect.classList.add("error"); valid = false;
-  }
-  if (!zoneSelect.value) {
-    setError("errZone", "Please select a zone.");
-    zoneSelect.classList.add("error"); valid = false;
-  }
-  if (!titleInput.value.trim()) {
-    setError("errTitle", "Complaint title is required.");
-    titleInput.classList.add("error"); valid = false;
-  }
-
-  // Phone: mandatory, exactly 10 digits
-  const phone = phoneInput.value.trim();
-  if (!phone) {
-    setError("errPhone", "Contact phone number is required.");
-    phoneInput.classList.add("error"); valid = false;
-  } else if (!/^\d{10}$/.test(phone)) {
-    setError("errPhone", "Phone number must be exactly 10 digits.");
-    phoneInput.classList.add("error"); valid = false;
-  }
-
-  return valid;
-}
-
-// ── Encode attachments ────────────────────────────────────────────────────────
-function encodeAttachments() {
-  const files = Array.from(fileInput.files);
-  if (!files.length) return Promise.resolve([]);
-  return Promise.all(
-    files.map(file => new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload  = e => resolve({ name: file.name, type: file.type, size: file.size, src: e.target.result });
-      reader.onerror = () => resolve({ name: file.name, type: file.type, size: file.size, src: "" });
-      reader.readAsDataURL(file);
-    }))
-  );
-}
-
-// ── Submit ────────────────────────────────────────────────────────────────────
-submitBtn.addEventListener("click", async () => {
-  if (!validateForm()) return;
-
-  submitBtn.classList.add("loading");
-  submitBtn.textContent = "Submitting...";
-
-  const attachments = await encodeAttachments();
-
-  const data = {
-    department:    deptSelect.value,
-    category:      catSelect.value,
-    zone:          zoneSelect.value,
-    title:         titleInput.value.trim(),
-    description:   descInput.value.trim(),
-    location:      locationInput.value.trim(),
-    phone:         phoneInput.value.trim(),
-    priority:      prioritySelect.value,
-    contactTime:   contactTime.value,
-    submittedBy:   currentUser.id,
-    submittedName: currentUser.name,
-    attachments:   attachments
-  };
-
-  setTimeout(() => {
-    const result = submitCase(data);
-
-    submitBtn.classList.remove("loading");
-    submitBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Complaint';
-
-    if (result && result.success) {
-      successBanner.style.display = "flex";
-      successBanner.scrollIntoView({ behavior: "smooth", block: "start" });
-      resetForm();
-    } else if (result && result.error) {
-      setError("errTitle", result.error);
+    // ✅ basic validation
+    if (!data.title || !data.department) {
+      alert("Title and Department are required");
+      return;
     }
-  }, 400);
-});
 
-// ── Save Draft ────────────────────────────────────────────────────────────────
-saveDraftBtn.addEventListener("click", () => {
-  const draft = {
-    department: deptSelect.value, category: catSelect.value, zone: zoneSelect.value,
-    title: titleInput.value.trim(), description: descInput.value.trim(),
-    location: locationInput.value.trim(), phone: phoneInput.value.trim(), priority: prioritySelect.value
-  };
-  localStorage.setItem("complaint_draft", JSON.stringify(draft));
-  saveDraftBtn.textContent = "Draft Saved \u2713";
-  setTimeout(() => { saveDraftBtn.textContent = "Save Draft"; }, 2000);
-});
+    try {
+      const result = await handleAddCase(data);
 
-// ── Reset ─────────────────────────────────────────────────────────────────────
-function resetForm() {
-  deptSelect.value = "";
-  updateCategories("");
-  zoneSelect.value = "";
-  titleInput.value = "";
-  descInput.value = "";
-  locationInput.value = "";
-  phoneInput.value = "";
-  prioritySelect.value = "Medium";
-  contactTime.value = "";
-  fileList.innerHTML = "";
-  localStorage.removeItem("complaint_draft");
-}
+      if (result.error) {
+        console.error(result);
+        alert("Failed to submit complaint");
+        return;
+      }
 
-// ── Restore Draft ─────────────────────────────────────────────────────────────
-function restoreDraft() {
-  const raw = localStorage.getItem("complaint_draft");
-  if (!raw) return;
-  try {
-    const draft = JSON.parse(raw);
-    if (draft.department) { deptSelect.value = draft.department; updateCategories(draft.department); if (draft.category) catSelect.value = draft.category; }
-    if (draft.zone)        zoneSelect.value     = draft.zone;
-    if (draft.title)       titleInput.value     = draft.title;
-    if (draft.description) descInput.value      = draft.description;
-    if (draft.location)    locationInput.value  = draft.location;
-    if (draft.phone)       phoneInput.value     = draft.phone;
-    if (draft.priority)    prioritySelect.value = draft.priority;
-  } catch (e) { console.warn("Could not restore draft:", e); }
-}
+      alert("Complaint submitted successfully!");
+      window.location.href = "citizen-dashboard.html";
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-updateCategories("");
-restoreDraft();
-
-[deptSelect, catSelect, zoneSelect, titleInput, phoneInput].forEach(el => {
-  el.addEventListener("change", () => el.classList.remove("error"));
-  el.addEventListener("input",  () => el.classList.remove("error"));
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  });
 });

@@ -1,5 +1,4 @@
 // js/login.js
-import { validateUserLogin } from "../models/userModel.js";
 
 const roleDisplay   = document.getElementById("role-display");
 const usernameInput = document.getElementById("username");
@@ -15,82 +14,72 @@ const ROLE_ROUTES = {
   superuser:  "./superuser/superuser-dashboard.html",
 };
 
-const ROLE_LABELS = {
-  citizen:    "Citizen",
-  officer:    "Officer",
-  supervisor: "Supervisor",
-  superuser:  "Super User",
-};
-
 const role = sessionStorage.getItem("ct_selected_role");
 if (!role) window.location.href = "role-selection.html";
 
-if (roleDisplay) roleDisplay.textContent = ROLE_LABELS[role] || role;
+if (roleDisplay) roleDisplay.textContent = role;
 
-// ── Citizen: switch input to phone number mode ────────────────────────────────
+// Citizen UI change
 if (role === "citizen") {
   const label = document.querySelector("label[for='username']");
   if (label) label.textContent = "Phone Number";
 
-  if (usernameInput) {
-    usernameInput.placeholder = "Enter your 10-digit phone number";
-    usernameInput.type        = "tel";
-    usernameInput.maxLength   = 10;
-    usernameInput.addEventListener("input", () => {
-      usernameInput.value = usernameInput.value.replace(/\D/g, "").slice(0, 10);
-    });
-  }
-
-  // Create Account link
-  const authBody = document.querySelector(".auth-body");
-  if (authBody && !document.getElementById("create-account-link")) {
-    const p = document.createElement("p");
-    p.style.cssText = "margin-top:12px;text-align:center;font-size:0.875rem;";
-    p.innerHTML = "Don't have an account? <a id='create-account-link' href='create-account.html' style='color:var(--red,#e33);font-weight:600;'>Create one</a>";
-    authBody.appendChild(p);
-  }
+  usernameInput.placeholder = "Enter 10-digit phone";
 }
 
-// ── Event listeners ───────────────────────────────────────────────────────────
 loginBtn.addEventListener("click", handleLogin);
-usernameInput.addEventListener("keydown", e => { if (e.key === "Enter") passwordInput.focus(); });
-passwordInput.addEventListener("keydown", e => { if (e.key === "Enter") handleLogin(); });
 
-function handleLogin() {
+async function handleLogin() {
   const username = usernameInput.value.trim();
   const password = passwordInput.value;
 
   clearErrors();
 
-  // Citizen validates phone format; others just check not empty
-  if (role === "citizen") {
-    if (!username) { showUsernameError("Phone number is required."); return; }
-    if (!/^\d{10}$/.test(username)) { showUsernameError("Enter a valid 10-digit phone number."); return; }
-  } else {
-    if (!username) { showUsernameError("Name is required."); return; }
-  }
+  if (!username) return showUsernameError("Required");
+  if (!password) return showPasswordError("Required");
 
-  if (!password) { showPasswordError("Password is required."); return; }
+  try {
+    const res = await fetch("http://localhost:3000/users", {
+      headers: { role: "superuser" }
+    });
 
-  const result = validateUserLogin(username, password, role);
+    const users = await res.json();
 
-  if (!result.success) {
-    if (result.error.toLowerCase().includes("password")) {
-      showPasswordError(result.error);
+    let user;
+
+    if (role === "citizen") {
+      user = users.find(
+        u =>
+          u.role === "citizen" &&
+          u.phone === username &&
+          u.password === password
+      );
     } else {
-      showUsernameError(role === "citizen"
-        ? "No account found with this phone number."
-        : result.error
+      user = users.find(
+        u =>
+          u.role === role &&
+          u.name.toLowerCase() === username.toLowerCase() &&
+          u.password === password
       );
     }
-    return;
-  }
 
-  sessionStorage.setItem("ct_user", JSON.stringify(result.user));
-  sessionStorage.setItem("ct_user_id", result.user.id);
-  window.location.href = ROLE_ROUTES[role] || "index.html";
+    if (!user) {
+      showUsernameError("Invalid credentials");
+      return;
+    }
+
+    sessionStorage.setItem("ct_user", JSON.stringify(user));
+    sessionStorage.setItem("ct_user_id", user.id);
+
+    window.location.href = ROLE_ROUTES[role];
+
+  } catch (err) {
+    console.error(err);
+    showUsernameError("Server error");
+  }
 }
 
+// ── ERRORS ─────────────────
 function showUsernameError(msg) {
   usernameInput.classList.add("error-input");
   usernameError.textContent = msg;

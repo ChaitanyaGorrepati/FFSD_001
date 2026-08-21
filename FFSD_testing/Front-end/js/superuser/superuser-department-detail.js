@@ -57,9 +57,9 @@ function getDeptColor(name) {
 }
 
 // ── Render ────────────────────────────────────────────────────────────────────
-function render() {
+async function render() {
   initDepartments();
-  initUsers();
+ 
 
   const depts = getDepartments();
   const dept = depts.find(d => d.name === deptName);
@@ -81,7 +81,10 @@ function render() {
   iconEl.style.background = getDeptColor(dept.name);
 
   // Users
-  const allUsers = getUsers();
+  const res = await fetch("http://localhost:3000/users", {
+  headers: { role: "superuser" }
+});
+const allUsers = await res.json();
   const supervisors = allUsers.filter(u => u.role === "supervisor" && u.department === dept.name);
   const officers = allUsers.filter(u => u.role === "officer" && u.department === dept.name);
   const categories = dept.categories || [];

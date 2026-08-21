@@ -1,12 +1,16 @@
 // js/supervisor/closure-requests.js
-// Closure Requests page — supervisor approves/rejects officer closure requests.
-// On approval/rejection, the case's activity[] is updated so case-details
-// automatically shows "Supervisor closed the case" or "Supervisor rejected closure".
 
 import {
-  getCases, updateCase, appendActivity, pushNotification,
-  resolveOfficerName, formatDate, getLoggedInSupervisor
+  resolveOfficerName,
+  formatDate,
+  getLoggedInSupervisor
 } from './supervisorData.js';
+
+import {
+  handleGetCases,
+  handleClosureDecision
+} from "../../controllers/caseController.js";
+
 import { populateSupervisorIdentity } from './sidebar-identity.js';
 
 populateSupervisorIdentity();
@@ -15,55 +19,62 @@ const supervisor = getLoggedInSupervisor();
 const tbody      = document.getElementById("closure-tbody");
 const emptyState = document.getElementById("empty-state");
 
-// ── Filter ────────────────────────────────────────────────────────────────────
+// 🔥 BACKEND DATA
+let backendCases = [];
+
+// ── FILTER ─────────────────────────────────────
 function getClosureCases() {
-  return getCases().filter(c => c.closureRequest != null);
+  return backendCases.filter(c => c.closureRequested === true);
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────────────
+// ── STATS ─────────────────────────────────────
 function updateStats() {
-  const all = getCases();
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set("stat-pending",  all.filter(c => c.closureRequest?.status === "Pending"  || c.closureRequest?.status === "pending").length);
-  set("stat-approved", all.filter(c => c.closureRequest?.status === "Approved" || c.closureRequest?.status === "approved").length);
-  set("stat-rejected", all.filter(c => c.closureRequest?.status === "Rejected" || c.closureRequest?.status === "rejected").length);
+  const set = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = v;
+  };
+
+  set("stat-pending",  backendCases.filter(c => c.closureStatus === "pending").length);
+  set("stat-approved", backendCases.filter(c => c.closureStatus === "approved").length);
+  set("stat-rejected", backendCases.filter(c => c.closureStatus === "rejected").length);
 }
 
-// ── Badge ─────────────────────────────────────────────────────────────────────
+// ── BADGE ─────────────────────────────────────
 function closureBadge(status) {
-  const s = (status || "").toLowerCase();
-  if (s === "pending")  return `<span class="badge badge-orange">Pending</span>`;
-  if (s === "approved") return `<span class="badge badge-green">Approved</span>`;
-  if (s === "rejected") return `<span class="badge badge-red">Rejected</span>`;
-  return `<span class="badge badge-gray">${status || "—"}</span>`;
+  if (status === "pending")  return `<span class="badge badge-orange">Pending</span>`;
+  if (status === "approved") return `<span class="badge badge-green">Approved</span>`;
+  if (status === "rejected") return `<span class="badge badge-red">Rejected</span>`;
+  return `<span class="badge badge-gray">—</span>`;
 }
 
-// ── Table ─────────────────────────────────────────────────────────────────────
+// ── TABLE ─────────────────────────────────────
 function renderTable() {
   const cases = getClosureCases();
+
   if (emptyState) emptyState.style.display = cases.length === 0 ? "block" : "none";
   if (!tbody) return;
 
   tbody.innerHTML = cases.map(c => {
-    const officerName = resolveOfficerName(c.assignedTo) || c.officer || "—";
-    const crStatus    = (c.closureRequest?.status || "pending").toLowerCase();
-    const isPending   = crStatus === "pending";
+    const officerName = resolveOfficerName(c.assignedOfficerId) || "—";
+    const isPending   = c.closureStatus === "pending";
+
     return `
     <tr>
       <td><a class="case-id-link" href="case-details.html?id=${c.id}">${c.id}</a></td>
       <td>${c.category || "—"}</td>
       <td>Officer ${officerName}</td>
-      <td><span class="resolution-text">${c.closureRequest?.summary || "—"}</span></td>
-      <td>${formatDate(c.closureRequest?.submittedAt || c.closureRequest?.requestedAt || c.createdAt)}</td>
-      <td>${closureBadge(c.closureRequest?.status)}</td>
+      <td><span class="resolution-text">—</span></td>
+      <td>${formatDate(c.createdAt)}</td>
+      <td>${closureBadge(c.closureStatus)}</td>
       <td>
         <div class="closure-actions">
           <a class="btn-sm btn-view" href="case-details.html?id=${c.id}">👁 View Details</a>
+
           ${isPending ? `
             <button class="btn-sm btn-approve" onclick="approveClosure('${c.id}')">Approve</button>
             <button class="btn-sm btn-reject"  onclick="rejectClosure('${c.id}')">Reject</button>
           ` : `
-            <span style="font-size:12px;color:var(--gray-400);">Already ${c.closureRequest?.status}</span>
+            <span style="font-size:12px;color:var(--gray-400);">Already ${c.closureStatus}</span>
           `}
         </div>
       </td>
@@ -71,85 +82,52 @@ function renderTable() {
   }).join("");
 }
 
-// ── Approve ───────────────────────────────────────────────────────────────────
-window.approveClosure = function(id) {
-  const c = getCases().find(x => x.id === id);
-  if (!c) return;
+// ── APPROVE ─────────────────────────────────────
+window.approveClosure = async function(id) {
+  try {
+    await handleClosureDecision(id, "approved");
 
-  const officerName = resolveOfficerName(c.assignedTo) || "Officer";
-  const now         = new Date().toISOString();
+    await loadCases();
 
-  updateCase(id, {
-    status:         "Closed",
-    closedAt:       now,
-    closureRequest: {
-      ...c.closureRequest,
-      status:         "Approved",
-      actedAt:        now,
-      actedBySup:     supervisor?.id,
-      actedBySupName: supervisor?.name,
-      supervisorNote: `Closure approved by Supervisor ${supervisor?.name}.`
-    }
-  });
+    toast(`Case ${id} approved`, "green");
 
-  // Append to activity log — case-details reads this
-  appendActivity(id, {
-    type:  "supervisor_closed",
-    label: `Case closed by Supervisor ${supervisor?.name}. Resolution confirmed: "${c.closureRequest?.summary || "—"}"`
-  });
-
-  // Notify officer
-  if (c.assignedTo) {
-    pushNotification(
-      c.assignedTo,
-      `Your closure request for case ${id} has been APPROVED by Supervisor ${supervisor?.name}. Case is now Closed.`,
-      id
-    );
+  } catch (err) {
+    console.error(err);
+    toast("Failed to approve", "red");
   }
-
-  renderTable();
-  updateStats();
-  toast(`Case ${id} closure approved. Case is now Closed.`, "green");
 };
 
-// ── Reject ────────────────────────────────────────────────────────────────────
-window.rejectClosure = function(id) {
-  const c = getCases().find(x => x.id === id);
-  if (!c) return;
+// ── REJECT ─────────────────────────────────────
+window.rejectClosure = async function(id) {
+  try {
+    await handleClosureDecision(id, "rejected");
 
-  const now = new Date().toISOString();
+    await loadCases();
 
-  updateCase(id, {
-    closureRequest: {
-      ...c.closureRequest,
-      status:         "Rejected",
-      actedAt:        now,
-      actedBySup:     supervisor?.id,
-      actedBySupName: supervisor?.name,
-      supervisorNote: `Closure rejected by Supervisor ${supervisor?.name}. Please continue working on the case.`
-    }
-  });
+    toast(`Case ${id} rejected`, "red");
 
-  appendActivity(id, {
-    type:  "supervisor_rejected",
-    label: `Closure request rejected by Supervisor ${supervisor?.name}. Officer must continue working on the case.`
-  });
-
-  // Notify officer
-  if (c.assignedTo) {
-    pushNotification(
-      c.assignedTo,
-      `Your closure request for case ${id} was REJECTED by Supervisor ${supervisor?.name}. Please continue working on the case.`,
-      id
-    );
+  } catch (err) {
+    console.error(err);
+    toast("Failed to reject", "red");
   }
-
-  renderTable();
-  updateStats();
-  toast(`Case ${id} closure rejected. Officer notified.`, "red");
 };
 
-// ── Toast ─────────────────────────────────────────────────────────────────────
+// ── LOAD FROM BACKEND ───────────────────────────
+async function loadCases() {
+  try {
+    const data = await handleGetCases("supervisor", supervisor.id);
+
+    backendCases = data;
+
+    updateStats();
+    renderTable();
+
+  } catch (err) {
+    console.error("Error loading closure cases:", err);
+  }
+}
+
+// ── TOAST ─────────────────────────────────────
 function toast(msg, color = "green") {
   const t = document.createElement("div");
   t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:9999;
@@ -160,5 +138,5 @@ function toast(msg, color = "green") {
   setTimeout(() => t.remove(), 3000);
 }
 
-updateStats();
-renderTable();
+// ── INIT ─────────────────────────────────────
+loadCases();

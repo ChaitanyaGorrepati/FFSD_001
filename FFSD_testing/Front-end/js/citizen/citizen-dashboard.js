@@ -1,101 +1,85 @@
-// js/citizen/citizen-dashboard.js
-import { fetchCases } from "../index.js";
+import { handleGetCases } from "../../controllers/caseController.js";
 import { initNotifications } from "../../models/notificationModel.js";
 import { initNotificationUI } from "../notificationUI.js";
 
-// ── 1. Session guard ──────────────────────────────────────────────────────────
+// ── Session ─────────────────────────────────────────────────────────────
 const currentUser = JSON.parse(sessionStorage.getItem("ct_user"));
 
 if (!currentUser || currentUser.role !== "citizen") {
   window.location.href = "../../login.html";
 }
 
-// ── 2. Init notifications ─────────────────────────────────────────────────────
+// ── Notifications ───────────────────────────────────────────────────────
 initNotifications();
 initNotificationUI(currentUser.id);
 
-// ── 3. Logout ─────────────────────────────────────────────────────────────────
+// ── Logout ──────────────────────────────────────────────────────────────
 document.getElementById("logout-btn").addEventListener("click", (e) => {
   e.preventDefault();
-  sessionStorage.removeItem("ct_user");
-  sessionStorage.removeItem("ct_selected_role");
+  sessionStorage.clear();
   window.location.href = "../login.html";
 });
 
-// ── 4. Name & avatar ──────────────────────────────────────────────────────────
+// ── UI Setup ────────────────────────────────────────────────────────────
 const initials = currentUser.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 document.getElementById("sidebarUserName").textContent = currentUser.name;
 document.getElementById("topbarUserName").textContent  = currentUser.name;
 document.querySelectorAll(".avatar").forEach(el => el.textContent = initials);
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────────
 function getStatusBadge(status) {
   const map = {
-    "Assigned":    "badge-assigned",
-    "In Progress": "badge-progress",
-    "Resolved":    "badge-resolved",
-    "Closed":      "badge-closed",
-    "Pending":     "badge-pending",
-    "Submitted":   "badge-pending"
+    open: "badge-assigned",
+    "in-progress": "badge-progress",
+    resolved: "badge-resolved",
+    closed: "badge-closed"
   };
   return `<span class="badge ${map[status] || "badge-closed"}">${status}</span>`;
 }
 
 function formatDate(iso) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
-function showAlert(msg) {
-  const banner = document.getElementById("alertBanner");
-  document.getElementById("alertText").textContent = msg;
-  banner.style.display = "flex";
+  return new Date(iso).toLocaleDateString();
 }
 
 function renderStats(cases) {
-  document.getElementById("statTotal").textContent    = cases.length;
-  document.getElementById("statOpen").textContent     = cases.filter(c => c.status === "Assigned").length;
-  document.getElementById("statProgress").textContent = cases.filter(c => c.status === "In Progress").length;
-  document.getElementById("statResolved").textContent = cases.filter(c => c.status === "Resolved").length;
-
-  const subtitle = document.getElementById("dashSubtitle");
-  subtitle.textContent = cases.length === 0
-    ? "No complaints submitted yet."
-    : `You have ${cases.length} complaint${cases.length > 1 ? "s" : ""} on record.`;
+  document.getElementById("statTotal").textContent = cases.length;
+  document.getElementById("statOpen").textContent = cases.filter(c => c.status === "open").length;
+  document.getElementById("statProgress").textContent = cases.filter(c => c.status === "in-progress").length;
+  document.getElementById("statResolved").textContent = cases.filter(c => c.status === "resolved").length;
 }
 
 function renderTable(cases) {
   const tbody = document.getElementById("recentTableBody");
+
   if (!cases.length) {
-    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No complaints found. <a href="citizen-submit-complaint.html" style="color:var(--red)">Submit one now →</a></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7">No complaints</td></tr>`;
     return;
   }
-  const recent = cases.slice(-5).reverse();
-  tbody.innerHTML = recent.map(c => `
+
+  tbody.innerHTML = cases.map(c => `
     <tr>
-      <td><span class="case-id">${c.id}</span></td>
-      <td>${c.category || "—"}</td>
-      <td>${c.department || "—"}</td>
-      <td>${c.zone || "—"}</td>
+      <td>${c.id}</td>
+      <td>${c.title}</td>
+      <td>${c.department}</td>
+      <td>${c.zone}</td>
       <td>${getStatusBadge(c.status)}</td>
-      <td class="text-muted text-sm">${formatDate(c.createdAt)}</td>
-      <td><a href="citizen-complaint-detail.html?id=${c.id}" class="btn btn-outline btn-xs">View</a></td>
+      <td>${formatDate(c.createdAt)}</td>
+      <td><a href="citizen-complaint-detail.html?id=${c.id}">View</a></td>
     </tr>
   `).join("");
 }
 
-function init() {
+// ── INIT (ASYNC FIX) ────────────────────────────────────────────────────
+async function init() {
   try {
-    const allCases = fetchCases();
-    const myCases  = allCases.filter(c => c.submittedBy === currentUser.id);
-    renderStats(myCases);
-    renderTable(myCases);
-    const hasPending = myCases.some(c => c.transfer?.status === "pending");
-    if (hasPending) showAlert("One or more of your cases have a pending transfer request.");
+    const allCases = await handleGetCases("citizen", "1"); // 🔥 FIX
+
+    renderStats(allCases);
+    renderTable(allCases);
+
   } catch (err) {
-    console.error("Dashboard init error:", err);
-    document.getElementById("recentTableBody").innerHTML =
-      `<tr><td colspan="7" class="empty-state">Failed to load complaints.</td></tr>`;
+    console.error("Dashboard error:", err);
   }
 }
 

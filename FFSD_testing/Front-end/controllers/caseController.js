@@ -1,133 +1,118 @@
-import { addCase, getCases, updateCase } from "../models/caseModel.js";
-import { getOfficers } from "../models/userModel.js";
+import { getCases, updateCase } from "../models/caseModel.js";
 
-// 🔥 AUTO ASSIGNMENT — matches officer by department + zone
-function assignOfficer(department, zone) {
-  const officers = getOfficers();
-
-  // Try exact match first
-  let officer = officers.find(
-    o => o.department === department && o.zone === zone
-  );
-
-  // Fallback: match by department only
-  if (!officer) {
-    officer = officers.find(o => o.department === department);
-  }
-
-  return officer || null;
-}
-
-// ── CREATE CASE ───────────────────────────────────────────────────────────────
-export function handleAddCase(data) {
+// ── CREATE CASE (BACKEND) ───────────────────────────────────────────────
+export async function handleAddCase(data) {
   if (!data.title || !data.department) {
     return { error: "Missing required fields" };
   }
 
-  const zone = data.zone || "Zone A";
-  const officer = assignOfficer(data.department, zone);
+  try {
+    const response = await fetch("http://localhost:3000/cases", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        role: "citizen",
+      },
+      body: JSON.stringify(data),
+    });
 
-  // Normalize citizen name
-  const citizenName = data.submittedName || data.citizen || "Unknown Citizen";
-
-  const newCase = {
-    id: "CIV-" + Date.now(),
-
-    // ✅ merged safely (kept structured + flexibility)
-    ...data,
-    title: data.title,
-    description: data.description || "",
-    department: data.department,
-    category: data.category || "",
-    zone: zone,
-    location: data.location || "",
-    priority: data.priority || "Medium",
-
-    // ✅ important fields preserved
-    citizen: citizenName,
-    status: "Assigned",
-    assignedTo: officer ? officer.id : null,
-
-    submittedBy: data.submittedBy || "Citizen",
-    contactPhone: data.contactPhone || "",
-    contactEmail: data.contactEmail || "",
-
-    transfer: {
-      requested: false,
-      toDept: null,
-      status: null
-    },
-
-    notes: [],
-    createdAt: new Date().toISOString()
-  };
-
-  addCase(newCase);
-
-  return {
-    success: true,
-    caseId: newCase.id,
-    assignedTo: officer ? officer.name : "Unassigned"
-  };
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    return { error: error.message };
+  }
 }
 
-// ── READ ALL ──────────────────────────────────────────────────────────────────
-export function handleGetCases() {
-  return getCases();
+// ── READ ALL (BACKEND) ──────────────────────────────────────────────────
+export async function handleGetCases(role = "citizen", userId = "1") {
+  try {
+    const response = await fetch("http://localhost:3000/cases", {
+      headers: {
+        role: role,
+        userid: userId,
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    return [];
+  }
 }
 
-// ── UPDATE STATUS ─────────────────────────────────────────────────────────────
-export function handleUpdateStatus(id, status) {
-  updateCase(id, { status });
-  return { success: true };
+// ── UPDATE STATUS (BACKEND) ─────────────────────────────────────────────
+export async function handleUpdateStatus(id, status) {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/cases/${id}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          role: "officer",
+        },
+        body: JSON.stringify({ status }),
+      }
+    );
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    return { error: error.message };
+  }
 }
 
-// ✅ UPDATE PRIORITY
+// ── ASSIGN CASE (BACKEND) ───────────────────────────────────────────────
+export async function handleAssignCase(id, officerId) {
+  try {
+    const response = await fetch(
+      `http://localhost:3000/cases/${id}/assign`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          role: "supervisor",
+        },
+        body: JSON.stringify({ officerId }),
+      }
+    );
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
+// ── UPDATE PRIORITY (KEEP MOCK FOR NOW) ─────────────────────────────────
 export function handleUpdatePriority(id, priority) {
   updateCase(id, { priority });
   return { success: true };
 }
 
-// ── ADD NOTE (FIX #5: Standardize note structure) ────────────────────────────
+// ── ADD NOTE (KEEP MOCK) ────────────────────────────────────────────────
 export function handleAddNote(id, note) {
   const cases = getCases();
-  const target = cases.find(c => c.id === id);
+  const target = cases.find((c) => c.id === id);
 
   if (target) {
     const notes = target.notes || [];
-    
-    // Normalize note to structured format (FIX #5)
-    // Handles legacy plain strings + new structured objects
-    let normalizedNote;
-    
-    if (typeof note === 'string') {
-      // Legacy plain string → convert to structured
-      normalizedNote = {
-        text: note,
-        author: "Unknown",
-        role: "system",
-        time: new Date().toISOString()
-      };
-    } else if (typeof note === 'object' && note !== null) {
-      // Already an object, ensure all fields exist
-      normalizedNote = {
-        text: note.text || String(note),
-        author: note.author || "Unknown",
-        role: note.role || "system",
-        time: note.time || new Date().toISOString(),
-        // Preserve any additional fields
-        ...note
-      };
-    } else {
-      // Fallback for any other type
-      normalizedNote = {
-        text: String(note),
-        author: "Unknown",
-        role: "system",
-        time: new Date().toISOString()
-      };
-    }
-    
+
+    const normalizedNote =
+      typeof note === "object"
+        ? {
+            text: note.text || "",
+            author: note.author || "Unknown",
+            role: note.role || "system",
+            time: note.time || new Date().toISOString(),
+          }
+        : {
+            text: String(note),
+            author: "Unknown",
+            role: "system",
+            time: new Date().toISOString(),
+          };
+
     notes.push(normalizedNote);
     updateCase(id, { notes });
   }
@@ -135,38 +120,109 @@ export function handleAddNote(id, note) {
   return { success: true };
 }
 
-// ── TRANSFER REQUEST ──────────────────────────────────────────────────────────
-export function handleTransferRequest(id, toDept, reason, notes) {
-  updateCase(id, {
-    status: "Transferred",
-    transfer: {
-      requested: true,
-      toDept,
-      reason: reason || "",
-      notes: notes || "",
-      status: "pending",
-      requestedAt: new Date().toISOString()
-    }
-  });
 
-  return { success: true };
+// ── SUPERVISOR VIEW (TEMP MOCK FILTER) ─────────────────────────────────
+export async function handleGetCasesForSupervisor() {
+  // use backend instead of local filtering
+  return await handleGetCases("supervisor", "1");
 }
 
-// ── GET CASES FOR SUPERVISOR ──────────────────────────────────────────────────
-export function handleGetCasesForSupervisor(department) {
-  const cases = getCases();
 
-  return cases.filter(c =>
-    c.department === department &&
-    [
-      "Assigned",
-      "Accepted",
-      "In Progress",
-      "Waiting For Citizen",
-      "Resolved",
-      "Closed",
-      "Transferred",
-      "Rejected"
-    ].includes(c.status)
-  );
+
+export async function handleGetCaseById(id) {
+  const res = await fetch(`http://localhost:3000/cases/${id}`);
+  return res.json();
+}
+
+export async function handleUpdateCaseStatus(caseId, status) {
+  // 🔥 normalize input
+  const normalized = status.toLowerCase().replace(/\s+/g, "");
+
+  const statusMap = {
+    assigned: "open",
+    open: "open",
+    inprogress: "in-progress",
+    resolved: "closed",   // backend only allows open / in-progress / closed
+    closed: "closed"
+  };
+
+  const backendStatus = statusMap[normalized];
+
+  console.log("Sending to backend:", {
+    original: status,
+    normalized,
+    final: backendStatus
+  });
+
+  const res = await fetch(`http://localhost:3000/cases/${caseId}/status`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "role": "officer"
+    },
+    body: JSON.stringify({
+      status: backendStatus
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Backend error:", err);
+    throw new Error("Status update failed");
+  }
+
+  return res.json();
+}
+
+export async function handleClosureDecision(caseId, decision) {
+  const res = await fetch(`http://localhost:3000/cases/${caseId}/closure-decision`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      role: "supervisor"
+    },
+    body: JSON.stringify({ decision })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    console.error("Closure decision error:", err);
+    throw new Error("Closure decision failed");
+  }
+
+  return res.json();
+}
+
+
+export async function handleTransferRequest(caseId, toDepartment) {
+  const res = await fetch(`http://localhost:3000/cases/${caseId}/request-transfer`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      role: "officer"
+    },
+    body: JSON.stringify({ toDepartment })
+  });
+
+  if (!res.ok) throw new Error("Transfer request failed");
+
+  return res.json();
+}
+
+export async function handleTransferDecision(caseId, decision) {
+  const user = JSON.parse(sessionStorage.getItem("ct_user"));
+
+  const res = await fetch(`http://localhost:3000/cases/${caseId}/transfer-decision`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      role: "supervisor",
+      userid: user.id   // 🔥 REQUIRED
+    },
+    body: JSON.stringify({ decision })
+  });
+
+  if (!res.ok) throw new Error("Transfer decision failed");
+
+  return res.json();
 }
