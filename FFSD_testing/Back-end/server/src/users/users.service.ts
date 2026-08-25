@@ -4,7 +4,13 @@ import { User } from '../common/interfaces/user.interface';
 @Injectable()
 export class UsersService {
 private users: User[] = [
-  { id: 1, name: "Admin", role: "superuser", password: "admin123" }
+  { id: 1, name: "Admin", role: "superuser", password: "admin123" },
+
+  { id: 2, name: "Kiran", role: "supervisor", department: "electricity" },
+  { id: 3, name: "Kishore", role: "supervisor", department: "sanitation" },
+
+  { id: 4, name: "Ali", role: "officer", department: "electricity", zone: "A" },
+  { id: 5, name: "John", role: "officer", department: "sanitation", zone: "B" }
 ];
   private nextId = 6;
 
