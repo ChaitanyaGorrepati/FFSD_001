@@ -5,8 +5,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-  @IsIn(['citizen', 'officer', 'supervisor', 'superuser'])
-  role: 'citizen' | 'officer' | 'supervisor' | 'superuser';
+  @IsIn(['officer', 'supervisor'])
+  role: 'officer' | 'supervisor';
 
   @IsOptional()
   @IsString()

@@ -85,8 +85,8 @@ async function render() {
   headers: { role: "superuser" }
 });
 const allUsers = await res.json();
-  const supervisors = allUsers.filter(u => u.role === "supervisor" && u.department === dept.name);
-  const officers = allUsers.filter(u => u.role === "officer" && u.department === dept.name);
+  const supervisors = allUsers.filter(u => u.role === "supervisor" && u.department?.trim().toLowerCase() === dept.name.trim().toLowerCase());
+  const officers = allUsers.filter(u => u.role === "officer" && u.department?.trim().toLowerCase() === dept.name.trim().toLowerCase());
   const categories = dept.categories || [];
 
   // Stats

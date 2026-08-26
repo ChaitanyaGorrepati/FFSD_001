@@ -92,23 +92,23 @@
 
         <!-- Statistics Cards -->
         <div class="stats-grid">
-          <button class="stat-card stat-filter-btn" data-status="all">
+          <button class="stat-card stat-filter-btn" data-status="all" type="button">
             <div class="stat-value" id="stat-total">0</div>
             <div class="stat-label">Total Cases</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="Assigned">
+          <button class="stat-card stat-filter-btn" data-status="open" type="button">
             <div class="stat-value stat-open" id="stat-open">0</div>
             <div class="stat-label">Assigned / Pending</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="In Progress">
+          <button class="stat-card stat-filter-btn" data-status="in-progress" type="button">
             <div class="stat-value stat-in-progress" id="stat-in-progress">0</div>
             <div class="stat-label">In Progress</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="Resolved">
+          <button class="stat-card stat-filter-btn" data-status="resolved" type="button">
             <div class="stat-value stat-resolved" id="stat-resolved">0</div>
             <div class="stat-label">Resolved</div>
           </button>
-          <button class="stat-card stat-filter-btn" data-status="Closed">
+          <button class="stat-card stat-filter-btn" data-status="closed" type="button">
             <div class="stat-value stat-closed" id="stat-closed">0</div>
             <div class="stat-label">Closed</div>
           </button>
@@ -117,10 +117,10 @@
         <!-- Filter tabs -->
         <div class="filter-tabs mb-4" id="status-filter">
           <div class="filter-tab active" data-status="all">All</div>
-          <div class="filter-tab" data-status="Assigned">Assigned</div>
-          <div class="filter-tab" data-status="In Progress">In Progress</div>
-          <div class="filter-tab" data-status="Resolved">Resolved</div>
-          <div class="filter-tab" data-status="Closed">Closed</div>
+          <div class="filter-tab" data-status="open">Assigned</div>
+          <div class="filter-tab" data-status="in-progress">In Progress</div>
+          <div class="filter-tab" data-status="resolved">Resolved</div>
+          <div class="filter-tab" data-status="closed">Closed</div>
         </div>
 
         <!-- Search & Filter Controls -->
@@ -167,7 +167,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title" id="case-modal-title">Case Details</h2>
-        <button class="modal-close" id="case-modal-close">
+        <button class="modal-close" id="case-modal-close" type="button">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -215,36 +215,16 @@
           <input type="text" class="input" id="view-date-filed" disabled />
         </div>
 
-        <hr style="border: 1px solid #e5e7eb; margin: 24px 0;" />
-
-        <div class="form-group">
-          <label class="form-label">Update Status</label>
-          <select class="select" id="update-status">
-            <option value="Assigned">Assigned</option>
-            <option value="In Progress">In Progress</option>
-            <option value="Resolved">Resolved</option>
-            <option value="Closed">Closed</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-        </div>
-
         <div class="form-group mt-4">
-          <label class="form-label">Add Notes</label>
-          <textarea class="input" id="add-note" placeholder="Add work notes or updates..." style="min-height: 80px;"></textarea>
-        </div>
-
-        <div class="form-group mt-4">
-          <label class="form-label">Previous Notes</label>
-          <div id="notes-list" style="background: #f9fafb; border-radius: 6px; padding: 12px; min-height: 60px; font-size: 14px; color: #6b7280;">
-            No notes yet.
+          <label class="form-label">Notes</label>
+          <div id="notes-list" style="background: #f9fafb; border-radius: 6px; padding: 12px; min-height: 50px; font-size: 14px; color: #6b7280;">
+            No notes recorded.
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-outline" id="btn-case-close">Close</button>
-        <button class="btn btn-primary" id="btn-add-note">Add Note</button>
-        <button class="btn btn-primary" id="btn-update-status">Update Status</button>
+        <button class="btn btn-outline" id="btn-case-close" type="button">Close</button>
       </div>
     </div>
   </div>

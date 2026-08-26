@@ -7,16 +7,16 @@ const registerBtn   = document.getElementById("register-btn");
 const successBanner = document.getElementById("successBanner");
 
 // digits only
-phoneInput.addEventListener("input", () => {
+phoneInput?.addEventListener("input", () => {
   phoneInput.value = phoneInput.value.replace(/\D/g, "").slice(0, 10);
 });
 
-registerBtn.addEventListener("click", handleRegister);
+registerBtn?.addEventListener("click", handleRegister);
 
 async function handleRegister() {
-  const name = fullnameInput.value.trim();
-  const phone = phoneInput.value.trim();
-  const password = passwordInput.value;
+  const name = fullnameInput?.value.trim();
+  const phone = phoneInput?.value.trim();
+  const password = passwordInput?.value;
 
   if (!name || !phone || !password) {
     alert("All fields required");
@@ -24,12 +24,12 @@ async function handleRegister() {
   }
 
   if (!/^\d{10}$/.test(phone)) {
-    alert("Invalid phone number");
+    alert("Invalid phone number. Please enter a 10-digit number.");
     return;
   }
 
   try {
-    await fetch("http://localhost:3000/users/register", {
+    const res = await fetch("http://localhost:3000/users/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -41,12 +41,20 @@ async function handleRegister() {
       })
     });
 
-    successBanner.classList.remove("hidden");
-    registerBtn.disabled = true;
-    registerBtn.textContent = "Account Created ✓";
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      alert(errData.message || "Registration failed");
+      return;
+    }
+
+    if (successBanner) successBanner.classList.remove("hidden");
+    if (registerBtn) {
+      registerBtn.disabled = true;
+      registerBtn.textContent = "Account Created ✓";
+    }
 
   } catch (err) {
     console.error(err);
-    alert("Registration failed");
+    alert("Registration failed. Server error.");
   }
 }
