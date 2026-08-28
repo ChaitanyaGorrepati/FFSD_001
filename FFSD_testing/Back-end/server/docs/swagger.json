@@ -690,12 +690,29 @@
     }
   },
   "info": {
-    "title": "Case Management API",
-    "description": "Case Management API description",
+    "title": "CivicTrack - Case Management API",
+    "description": "Comprehensive case management API for citizen complaints",
     "version": "1.0.0",
     "contact": {}
   },
-  "tags": [],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Cases",
+      "description": "Case management endpoints"
+    },
+    {
+      "name": "Departments",
+      "description": "Department management endpoints"
+    },
+    {
+      "name": "Notifications",
+      "description": "Notification management endpoints"
+    }
+  ],
   "servers": [],
   "components": {
     "schemas": {
