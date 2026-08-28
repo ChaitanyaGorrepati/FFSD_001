@@ -9,6 +9,7 @@ export class ErrorHandlingMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // Store original send method
     const originalSend = res.send.bind(res);
+    const loggerService = this.loggerService;
 
     // Override send to catch errors
     res.send = function (data: any) {
@@ -20,7 +21,7 @@ export class ErrorHandlingMiddleware implements NestMiddleware {
       if (statusCode >= 400) {
         try {
           const errorData = typeof data === 'string' ? JSON.parse(data) : data;
-          this.loggerService.logError(
+          loggerService.logError(
             errorData.message || 'HTTP Error',
             statusCode,
             errorData,
@@ -28,7 +29,7 @@ export class ErrorHandlingMiddleware implements NestMiddleware {
             requestId,
           );
         } catch (e) {
-          this.loggerService.logError(
+          loggerService.logError(
             'Unknown error occurred',
             statusCode,
             { raw: data },

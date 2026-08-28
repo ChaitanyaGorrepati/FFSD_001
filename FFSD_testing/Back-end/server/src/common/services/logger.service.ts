@@ -7,6 +7,7 @@ import * as fs from 'fs';
 @Injectable()
 export class LoggerService {
   private logger: winston.Logger;
+  private accessLogger: winston.Logger;
 
   constructor() {
     // Ensure logs directory exists
@@ -52,6 +53,11 @@ export class LoggerService {
         winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         winston.format.json(),
       ),
+    });
+
+    this.accessLogger = winston.createLogger({
+      level: 'info',
+      transports: [accessTransport],
     });
 
     // Initialize Winston logger
@@ -124,7 +130,7 @@ export class LoggerService {
     userId?: string,
     userRole?: string,
   ) {
-    this.logger.info(`${method} ${url}`, {
+    this.accessLogger.info(`${method} ${url}`, {
       statusCode,
       responseTime: `${responseTime}ms`,
       userId,

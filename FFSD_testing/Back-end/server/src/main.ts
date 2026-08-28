@@ -7,7 +7,6 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
 import {
   LoggingMiddleware,
   ErrorHandlingMiddleware,
-  FileUploadMiddleware,
   SecurityMiddleware,
 } from './common/middleware';
 import * as fs from 'fs';
@@ -34,13 +33,10 @@ async function bootstrap() {
   // 1. Security middleware (helmet, rate limiting)
   app.use(new SecurityMiddleware(loggerService).use.bind(new SecurityMiddleware(loggerService)));
 
-  // 2. File upload middleware
-  app.use(new FileUploadMiddleware(loggerService).use.bind(new FileUploadMiddleware(loggerService)));
-
-  // 3. Logging middleware
+  // 2. Logging middleware
   app.use(new LoggingMiddleware(loggerService).use.bind(new LoggingMiddleware(loggerService)));
 
-  // 4. Error handling middleware
+  // 3. Error handling middleware
   app.use(new ErrorHandlingMiddleware(loggerService).use.bind(new ErrorHandlingMiddleware(loggerService)));
 
   // Global validation pipe
