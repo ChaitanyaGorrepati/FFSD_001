@@ -8,6 +8,7 @@ import {
   LoggingMiddleware,
   ErrorHandlingMiddleware,
   SecurityMiddleware,
+  AuthMiddleware,
 } from './common/middleware';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -49,10 +50,13 @@ async function bootstrap() {
   // 1. Security middleware (helmet, rate limiting)
   app.use(new SecurityMiddleware(loggerService).use.bind(new SecurityMiddleware(loggerService)));
 
-  // 2. Logging middleware
+  // 2. Authentication middleware
+  app.use(new AuthMiddleware().use.bind(new AuthMiddleware()));
+
+  // 3. Logging middleware
   app.use(new LoggingMiddleware(loggerService).use.bind(new LoggingMiddleware(loggerService)));
 
-  // 3. Error handling middleware
+  // 4. Error handling middleware
   app.use(new ErrorHandlingMiddleware(loggerService).use.bind(new ErrorHandlingMiddleware(loggerService)));
 
   // Global validation pipe
