@@ -9,6 +9,7 @@ export interface Case {
   assignedOfficerId: number;
 
   department: string;
+  category: string;
   zone: string;
   priority: 'low' | 'medium' | 'high';
 

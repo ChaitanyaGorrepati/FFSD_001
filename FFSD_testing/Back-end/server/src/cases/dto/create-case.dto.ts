@@ -12,6 +12,10 @@ export class CreateCaseDto {
   department: string;
 
   @IsString()
+  @IsNotEmpty()
+  category: string;
+
+  @IsString()
   zone: string;
 
   @IsIn(['low', 'medium', 'high'])
