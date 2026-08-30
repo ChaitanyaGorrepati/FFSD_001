@@ -18,12 +18,28 @@ async function bootstrap() {
   // Initialize Logger Service
   const loggerService = app.get(LoggerService);
 
-  // Enable CORS
+  // Enable CORS for the existing frontend and local development servers.
   app.enableCors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3001',
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim())
+      : (requestOrigin, callback) => {
+          const isLocalOrigin =
+            !requestOrigin ||
+            requestOrigin === 'null' ||
+            /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(requestOrigin);
+
+          callback(null, isLocalOrigin);
+        },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id', 'x-user-role'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'role',
+      'userid',
+      'x-user-id',
+      'x-user-role',
+    ],
   });
 
   // Register Global Exception Filter
