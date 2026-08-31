@@ -7,7 +7,7 @@ import { LoggerService } from '../services/logger.service';
 
 @Injectable()
 export class FileUploadMiddleware implements NestMiddleware {
-  private MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+  private MAX_FILE_SIZE = 1 * 1024 * 1024; // 10MB
   private ALLOWED_MIME_TYPES = [
     'image/jpeg',
     'image/png',

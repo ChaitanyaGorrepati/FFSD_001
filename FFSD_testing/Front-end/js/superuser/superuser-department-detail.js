@@ -82,9 +82,12 @@ async function render() {
 
   // Users
   const res = await fetch("http://localhost:3000/users", {
-  headers: { role: "superuser" }
-});
-const allUsers = await res.json();
+    headers: {
+      Authorization: "Bearer demo-auth-token",
+      role: "superuser"
+    }
+  });
+  const allUsers = await res.json();
   const supervisors = allUsers.filter(u => u.role === "supervisor" && u.department?.trim().toLowerCase() === dept.name.trim().toLowerCase());
   const officers = allUsers.filter(u => u.role === "officer" && u.department?.trim().toLowerCase() === dept.name.trim().toLowerCase());
   const categories = dept.categories || [];

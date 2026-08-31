@@ -11,6 +11,7 @@ export async function handleAddCase(data) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer demo-auth-token",
         role: "citizen",
       },
       body: JSON.stringify(data),
@@ -28,6 +29,7 @@ export async function handleGetCases(role = "citizen", userId = "1") {
   try {
     const response = await fetch("http://localhost:3000/cases", {
       headers: {
+        Authorization: "Bearer demo-auth-token",
         role: role,
         userid: userId,
       },
@@ -49,6 +51,7 @@ export async function handleUpdateStatus(id, status) {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: "Bearer demo-auth-token",
           role: "officer",
         },
         body: JSON.stringify({ status }),
@@ -71,6 +74,7 @@ export async function handleAssignCase(id, officerId) {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: "Bearer demo-auth-token",
           role: "supervisor",
         },
         body: JSON.stringify({ officerId }),
@@ -130,7 +134,19 @@ export async function handleGetCasesForSupervisor() {
 
 
 export async function handleGetCaseById(id) {
-  const res = await fetch(`http://localhost:3000/cases/${id}`);
+  const res = await fetch(`http://localhost:3000/cases/${id}`, {
+    headers: {
+      Authorization: "Bearer demo-auth-token",
+      role: "officer",
+      userid: "1"
+    }
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to fetch case");
+  }
+
   return res.json();
 }
 
@@ -158,6 +174,7 @@ export async function handleUpdateCaseStatus(caseId, status) {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      Authorization: "Bearer demo-auth-token",
       "role": "officer"
     },
     body: JSON.stringify({
@@ -179,6 +196,7 @@ export async function handleClosureDecision(caseId, decision) {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      Authorization: "Bearer demo-auth-token",
       role: "supervisor"
     },
     body: JSON.stringify({ decision })
@@ -199,6 +217,7 @@ export async function handleTransferRequest(caseId, toDepartment) {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      Authorization: "Bearer demo-auth-token",
       role: "officer"
     },
     body: JSON.stringify({ toDepartment })
@@ -216,6 +235,7 @@ export async function handleTransferDecision(caseId, decision) {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
+      Authorization: "Bearer demo-auth-token",
       role: "supervisor",
       userid: user.id   // 🔥 REQUIRED
     },

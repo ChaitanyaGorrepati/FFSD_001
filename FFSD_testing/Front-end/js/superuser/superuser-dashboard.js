@@ -49,13 +49,19 @@ async function renderStats() {
   try {
     // 🔥 USERS
     const userRes = await fetch("http://localhost:3000/users", {
-      headers: { role: "superuser" }
+      headers: {
+        Authorization: "Bearer demo-auth-token",
+        role: "superuser"
+      }
     });
     const users = await userRes.json();
 
     // 🔥 CASES
     const caseRes = await fetch("http://localhost:3000/cases", {
-      headers: { role: "superuser" }
+      headers: {
+        Authorization: "Bearer demo-auth-token",
+        role: "superuser"
+      }
     });
     const cases = await caseRes.json();
 
@@ -79,7 +85,10 @@ async function renderStats() {
 async function renderRecentCases() {
   try {
     const res = await fetch("http://localhost:3000/cases", {
-      headers: { role: "superuser" }
+      headers: {
+        Authorization: "Bearer demo-auth-token",
+        role: "superuser"
+      }
     });
 
     let cases = await res.json();

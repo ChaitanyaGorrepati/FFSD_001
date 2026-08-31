@@ -181,6 +181,7 @@ document.getElementById("crm-submit").addEventListener("click", async () => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
+        Authorization: "Bearer demo-auth-token",
         "role": "officer"
       },
       body: JSON.stringify({

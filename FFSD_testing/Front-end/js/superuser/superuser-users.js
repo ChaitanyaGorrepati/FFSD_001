@@ -63,7 +63,10 @@ function clearErrors() {
 async function loadDepartments() {
   try {
     const res = await fetch("http://localhost:3000/departments", {
-      headers: { role: "superuser" }
+      headers: {
+        Authorization: "Bearer demo-auth-token",
+        role: "superuser"
+      }
     });
     if (!res.ok) return;
     const depts = await res.json();
@@ -81,7 +84,10 @@ async function loadDepartments() {
 async function loadUsers() {
   try {
     const res = await fetch("http://localhost:3000/users", {
-      headers: { role: "superuser" }
+      headers: {
+        Authorization: "Bearer demo-auth-token",
+        role: "superuser"
+      }
     });
     if (!res.ok) {
       console.error("Failed to load users: Server returned", res.status);
@@ -324,6 +330,7 @@ async function handleSave() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: "Bearer demo-auth-token",
           role: "superuser"
         },
         body: JSON.stringify(body)
@@ -373,6 +380,7 @@ async function handleSave() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: "Bearer demo-auth-token",
           role: "superuser"
         },
         body: JSON.stringify(body)
@@ -411,7 +419,10 @@ async function handleDelete() {
   try {
     const res = await fetch(`http://localhost:3000/users/${pendingDeleteUser.id}`, {
       method: "DELETE",
-      headers: { role: "superuser" }
+      headers: {
+        Authorization: "Bearer demo-auth-token",
+        role: "superuser"
+      }
     });
 
     if (!res.ok) {

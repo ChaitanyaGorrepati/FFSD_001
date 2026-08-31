@@ -40,10 +40,23 @@ async function handleLogin() {
 
   try {
     const res = await fetch("http://localhost:3000/users", {
-      headers: { role: "superuser" }
+      method: "GET",
+      headers: {
+        Authorization: "Bearer demo-auth-token",
+        role: "superuser"
+      }
     });
 
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({}));
+      throw new Error(errorBody.message || "Unauthorized");
+    }
+
     const users = await res.json();
+
+    if (!Array.isArray(users)) {
+      throw new Error("Unexpected server response");
+    }
 
     let user;
 
@@ -75,7 +88,7 @@ async function handleLogin() {
 
   } catch (err) {
     console.error(err);
-    showUsernameError("Server error");
+    showUsernameError(err.message || "Server error");
   }
 }
 

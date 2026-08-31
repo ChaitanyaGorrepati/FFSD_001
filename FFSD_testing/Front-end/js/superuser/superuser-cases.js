@@ -71,8 +71,18 @@ function statusDisplayLabel(status) {
 async function loadData() {
   try {
     const [casesRes, usersRes] = await Promise.all([
-      fetch("http://localhost:3000/cases", { headers: { role: "superuser" } }),
-      fetch("http://localhost:3000/users", { headers: { role: "superuser" } })
+      fetch("http://localhost:3000/cases", {
+        headers: {
+          Authorization: "Bearer demo-auth-token",
+          role: "superuser"
+        }
+      }),
+      fetch("http://localhost:3000/users", {
+        headers: {
+          Authorization: "Bearer demo-auth-token",
+          role: "superuser"
+        }
+      })
     ]);
 
     if (casesRes.ok) {
